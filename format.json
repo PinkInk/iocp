@@ -1,0 +1,85 @@
+{
+    "node":"esp8266:18:fe:34:e1:1d:8b", //common
+    "timestamp":"2017-05-23T16:28:14.501Z", //common
+    "_id":"5924631ecbc7e301725661b6", //common
+    "h":53,
+    "l":0,
+    "t":31
+}
+
+// device to centre pushed samples
+{
+    "node": "esp8266:18:fe:34:e1:1d:8b",
+    "timestamp": "2017-05-23T16:28:14.501Z",
+    "_id": "5924631ecbc7e301725661b6",
+    "state": [ // sensor readings or state of readable actuator
+        {
+            "id": "vbat", // string = system e.g. vbat, cpufreq, cputemp etc.
+            "value": 3.1,
+        },
+        {
+            "id": 1, // int = indexed sensor
+            "type": "temp",
+            "value": 31,
+        },
+        {
+            "id": 2, // allows multiple e.g. Ambient Humidity
+            "type": "humidity",
+            "value": 51,
+        },
+        {
+            "id": 3,
+            "type": "luminance",
+            "value": 4234,
+        },
+        {
+            "id": 4, // allows multiple e.g. Soil Humidity
+            "type": "humidity",
+            "value": 23,
+        },
+        {
+            "id": 5,
+            "type": "motor", // actuator reading
+            "value": -23, // backwards 23% duty, 0 = off
+        },
+        {
+            "id": 6,
+            "type": "solenoid", // on/off
+            "value": 1, // active, 0 = inactive
+        },
+        {
+            "id": 10,
+            "type": "rawdata", // bus device (i2c, can, serial etc.)
+            "value": "string from raw device"
+        },
+    ],
+}
+
+// centre to device pushed commands
+// how to tell whether receipt of message is stale?
+{
+    "node": "esp8266:18:fe:34:e1:1d:8b", // node to action
+    "timestamp": "2017-05-23T16:28:14.501Z",
+    "command": [
+        {
+            "id": "cpu", // string = set system property
+            "value": "reboot",
+        },
+        {
+            "id": "cpufreq",
+            "value": 160,
+        },
+        {
+            "id": 6, // set state of actuator id x
+            "value": 0,
+        },
+        {
+            "id": 5, // set state of actuator id x
+            "value": 80,
+        },
+        {
+            "id": 10, //  bus device (i2c, can, serial etc.)
+            "value": "string to send"
+        }
+    ]
+}

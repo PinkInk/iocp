@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>iocp</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            .tablet {
+                height: 150px;
+                width: 150px;
+            }
+        </style>
+    </head>
+
+    <body class="w3-light-grey">
+
+        <div class="w3-container">
+
+            <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
+                <div class="w3-display-container tablet">
+                    <div class="w3-display-topleft fa fa-clock-o w3-xxxlarge"></div>
+                    <div class="w3-display-topright">
+                        <span class="w3-small">27/05/2017</span><br/>
+                        <span class="w3-xlarge" ng-bind="sampletime">10:23<span>
+                    </div>
+                    <div class="w3-display-bottomleft"><h3>time</h3></div>
+                </div>
+            </div>
+
+            <div class="w3-tag w3-margin w3-red w3-padding-large w3-bottombar w3-border-black">
+                <div class="w3-display-container tablet">
+                    <div class="w3-display-topleft fa fa-thermometer-1 w3-xxxlarge"></div>
+                    <div class="w3-display-topright"><h2 ng-bind="temp">28&deg;C<h2></div>
+                    <div class="w3-display-bottomleft"><h3>temp</h3></div>
+                </div>
+            </div>
+
+            <div class="w3-tag w3-margin w3-blue w3-padding-large w3-bottombar w3-border-black">
+                <div class="w3-display-container tablet">
+                    <div class="w3-display-topleft fa fa-cloud w3-xxxlarge"></div>
+                    <div class="w3-display-topright"><h2 ng-bind="humidity"><h2></div>
+                    <div class="w3-display-bottomleft"><h3>humidity</h3></div>
+                </div>
+            </div>
+
+            <div class="w3-tag w3-margin w3-green w3-padding-large w3-bottombar w3-border-black">
+                <div class="w3-display-container tablet">
+                    <div class="w3-display-topleft fa fa-sun-o w3-xxxlarge"></div>
+                    <div class="w3-display-topright"><h2 ng-bind="luminance"><h2></div>
+                    <div class="w3-display-bottomleft"><h3>luminance</h3></div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </body>
+
+</html>

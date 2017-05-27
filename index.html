@@ -1,0 +1,134 @@
+    <!DOCTYPE html>
+    <html>
+        <head>
+            <title>iocp</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+            <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+                <style>
+                .tablet {
+                    height: 150px;
+                    width: 150px;
+                }
+            </style>
+        </head>
+
+        <body ng-app="app" class="w3-light-grey">
+
+            <div class="w3-container w3-dark-grey w3-top">
+                <p class="w3-half w3-left-align">the Internet Of Chilli Peppers</p>
+                <!--<p class="w3-half w3-right-align">(c) Tim Pelling 2017</p>-->
+            </div>
+
+
+            <div class="w3-main" style="margin-top:60px;">
+
+                <!-- live view -->
+                <div ng-controller="liveview"
+                    class="w3-container"
+                >
+
+                    <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
+                        <div class="w3-display-container tablet">
+                            <div class="w3-display-topleft fa fa-clock-o w3-xxxlarge"></div>
+                            <div class="w3-display-topright w3-right-align">
+                                <span class="w3-small" ng-bind="timestamp | date"></span><br/>
+                                <span class="w3-large" ng-bind="timestamp | date : 'HH:MM'"></span><br/>
+                                <i class="w3-small">Last seen:</i></br>
+                                <i class="w3-small" ng-bind="timeelapsed | date : 'd'"></i>
+                                <i class="w3-small"> days</i>
+                                <i class="w3-small" ng-bind="timeelapsed | date : 'H:MM:ss'"></i>
+                            </div>
+                            <div class="w3-display-bottomleft"><h3>time</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="w3-tag w3-margin w3-red w3-padding-large w3-bottombar w3-border-black">
+                        <div class="w3-display-container tablet">
+                            <div class="w3-display-topleft fa fa-thermometer-1 w3-xxxlarge"></div>
+                            <div class="w3-display-topright"><h2 ng-bind="temp">28&deg;C<h2></div>
+                            <div class="w3-display-bottomleft"><h3>temp</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="w3-tag w3-margin w3-blue w3-padding-large w3-bottombar w3-border-black">
+                        <div class="w3-display-container tablet">
+                            <div class="w3-display-topleft fa fa-cloud w3-xxxlarge"></div>
+                            <div class="w3-display-topright"><h2 ng-bind="humidity"><h2></div>
+                            <div class="w3-display-bottomleft"><h3>humidity</h3></div>
+                        </div>
+                    </div>
+
+                    <div class="w3-tag w3-margin w3-green w3-padding-large w3-bottombar w3-border-black">
+                        <div class="w3-display-container tablet">
+                            <div class="w3-display-topleft fa fa-sun-o w3-xxxlarge"></div>
+                            <div class="w3-display-topright"><h2 ng-bind="luminance"><h2></div>
+                            <div class="w3-display-bottomleft"><h3>luminance</h3></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <header class="w3-container">
+                    <h5><b><i class="fa fa-line-chart"></i> history</b></h5>
+                </header><br/>
+                <div class="w3-row-padding w3-margin-bottom">
+                    <div class="w3-card-8 w3-grey" >
+                        <div style="max-width:100%; height:500px">
+                            <iframe style="height:100%; width:100%; transform: scale(1); transform-origin: 0 0;"
+                                    src="http://192.168.0.80:1880/ui"
+                            ></iframe>
+                        </div>
+                    </div>
+
+                </div>
+
+                <header class="w3-container">
+                    <h5><b><i class="fa fa-battery-quarter"></i> status</b></h5>
+                </header><br/>
+                <div class="w3-row-padding w3-margin-bottom">
+                </div>
+
+            </div>
+
+            <script>
+                var app = angular.module("app", []);
+
+                app.controller("liveview", function($scope, $http, $interval) {
+
+                    samples = {
+                        "t" : ["temp", "fa-thermometer-1", "w3-red", String.fromCharCode(176) + "C"],
+                        "h": ["humidity", "fa-cloud", "w3-blue", "%"],
+                        "l": ["luminance", "fa-sun-o", "w3-green", "lx"]
+                    };
+
+                    updateLiveView = function() {
+                        $http.get("/iocp/current")
+                        .then(function currentSuccess(response){
+                            data = response.data[0]; // single sample in array
+                            $scope.timestamp = new Date(data["timestamp"]);
+                            $scope.temp = data["t"] + String.fromCharCode(176) + "C";
+                            $scope.humidity = data["h"] + "%";
+                            $scope.luminance = parseInt(data["l"]) + "lx";
+                        });
+                    };
+
+                    updateTimeElapsed = function() {
+                        $scope.timeelapsed = new Date(new Date() - $scope.timestamp);
+                    };
+
+                    updateLiveView();
+                    updateTimeElapsed();
+                    $interval( function(){ updateLiveView(); }, 60*1000)
+                    $interval( function(){ updateTimeElapsed(); }, 1000)
+
+
+                });
+
+            </script>
+
+        </body>
+
+    </html>
