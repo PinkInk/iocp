@@ -1,0 +1,256 @@
+[
+    {
+        "id": "df0246a4.5a7b18",
+        "type": "tab",
+        "label": "www"
+    },
+    {
+        "id": "15d520ef.ffe77f",
+        "type": "http in",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "url": "/iocp/range",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 320,
+        "y": 300,
+        "wires": [
+            [
+                "a2c7b68c.cbe978"
+            ]
+        ]
+    },
+    {
+        "id": "a2c7b68c.cbe978",
+        "type": "function",
+        "z": "df0246a4.5a7b18",
+        "name": "build_query",
+        "func": "// query string\n// TODO: filter by node name\nmsg.payload = '{\"timestamp\": {$gte: ISODate(' +\n    msg.payload.start + \n    '), $lte: ISODate(' +\n    msg.payload.end + \n    ')}}';\n\n// sort by timestamp\nmsg.sort = {\n    \"timestamp\": true, // ascending\n};\n\n// fields to return \nmsg.projection = {\n    \"timestamp\": 1,\n    \"t\": true, \n    \"h\": true, \n    \"l\": true, \n    \"_id\": false, // returned if not excluded\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 520,
+        "y": 300,
+        "wires": [
+            [
+                "3f0c1a46.81c9b6"
+            ]
+        ]
+    },
+    {
+        "id": "3f0c1a46.81c9b6",
+        "type": "mongodb in",
+        "z": "df0246a4.5a7b18",
+        "mongodb": "2fa38bb1.9762c4",
+        "name": "nodes/nodes",
+        "collection": "nodes",
+        "operation": "find",
+        "x": 730,
+        "y": 300,
+        "wires": [
+            [
+                "9b30f45c.c6c2e8"
+            ]
+        ]
+    },
+    {
+        "id": "9b30f45c.c6c2e8",
+        "type": "http response",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "x": 910,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "673d5686.7974a8",
+        "type": "comment",
+        "z": "df0246a4.5a7b18",
+        "name": "datapoint range",
+        "info": "",
+        "x": 120,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "37ba6b03.059d44",
+        "type": "http in",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "url": "/iocp",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 120,
+        "wires": [
+            [
+                "78f9fd5f.1b1664"
+            ]
+        ]
+    },
+    {
+        "id": "78f9fd5f.1b1664",
+        "type": "template",
+        "z": "df0246a4.5a7b18",
+        "name": "template",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "html",
+        "syntax": "plain",
+        "template": "<!DOCTYPE html>\n<html>\n    <head>\n        <title>iocp</title>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">\n        <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n        <script src=\"https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js\"></script>\n            <style>\n            .tablet {\n                height: 150px;\n                width: 150px;\n            }\n        </style>\n    </head>\n\n    <body ng-app=\"app\" class=\"w3-light-grey\">\n\n        <div class=\"w3-container w3-dark-grey w3-top\">\n            <p class=\"w3-half w3-left-align\">the Internet Of Chilli Peppers</p>\n        </div>\n\n\n        <div class=\"w3-main\" style=\"margin-top:60px;\">\n\n            <!-- live view -->\n            <div ng-controller=\"liveview\"\n                class=\"w3-container\"\n            >\n\n                <!-- timestamps -->\n                <div class=\"w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black\">\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa fa-clock-o w3-xxxlarge\"></div>\n                        <div class=\"w3-display-topright w3-right-align\">\n                            <span class=\"w3-small\" ng-bind=\"timestamp | date\"></span><br/>\n                            <span class=\"w3-large\" ng-bind=\"timestamp | date : 'HH:MM'\"></span><br/>\n                            <i class=\"w3-small\">Last seen:</i></br>\n                            <i class=\"w3-small\" ng-bind=\"timeelapsed | date : 'd'\"></i>\n                            <i class=\"w3-small\"> days</i>\n                            <i class=\"w3-small\" ng-bind=\"timeelapsed | date : 'H:MM:ss'\"></i>\n                        </div>\n                        <div class=\"w3-display-bottomleft\"><h3>time</h3></div>\n                    </div>\n                </div>\n\n                <!-- datapoints -->\n                <div ng-repeat=\"point in datapoints\"\n                    class=\"w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black\"\n                >\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa {{types[point].icon}} w3-xxxlarge\"></div>\n                        <div class=\"w3-display-topright\"><h2>{{sample[point]}}{{types[point].unit}}<h2></div>\n                        <div class=\"w3-display-bottomleft\"><h3>{{types[point].title}}</h3></div>\n                    </div>\n                </div>\n\n            </div>\n\n            <header class=\"w3-container\">\n                <h5><b><i class=\"fa fa-line-chart\"></i> history</b></h5>\n            </header><br/>\n            <div class=\"w3-row-padding w3-margin-bottom\">\n                <div class=\"w3-card-8 w3-grey\" >\n                    <div style=\"max-width:100%; height:500px\">\n                        <iframe style=\"height:100%; width:100%; transform: scale(1); transform-origin: 0 0;\"\n                                src=\"http://192.168.0.80:1880/ui\"\n                        ></iframe>\n                    </div>\n                </div>\n\n            </div>\n\n            <header class=\"w3-container\">\n                <h5><b><i class=\"fa fa-battery-quarter\"></i> status</b></h5>\n            </header><br/>\n            <div class=\"w3-row-padding w3-margin-bottom\">\n            </div>\n\n        </div>\n\n        <script>\n\n            var app = angular.module(\"app\", []);\n\n            app.controller(\"liveview\", function($scope, $http, $interval) {\n\n                // get datapoint types\n                $http.get(\"/iocp/types\")\n                .then(function typessuccess(response){\n                    $scope.types = response.data;\n                });\n\n                // fn to get last datapoint\n                updateLiveView = function() {\n                    $http.get(\"/iocp/current\")\n                    .then(function currentSuccess(response){\n                        $scope.sample = response.data[0];\n                        $scope.timestamp = new Date($scope.sample[\"timestamp\"]);\n                        $scope.datapoints = Object.keys($scope.sample).filter(\n                            function(k) {\n                                return !(k==\"node\"|k==\"timestamp\"|k==\"_id\");\n                            }\n                        );\n                    });\n                };\n\n                // fn to get time elapsed since last datapoint\n                updateTimeElapsed = function() {\n                    $scope.timeelapsed = new Date(new Date() - $scope.timestamp);\n                };\n\n                // update model\n                updateLiveView();\n                updateTimeElapsed();\n                $interval( updateLiveView, 60*1000)\n                $interval( updateTimeElapsed, 1000)\n\n            });\n\n        </script>\n\n    </body>\n\n</html>\n",
+        "x": 320,
+        "y": 120,
+        "wires": [
+            [
+                "e50bace6.1f809"
+            ]
+        ]
+    },
+    {
+        "id": "e50bace6.1f809",
+        "type": "http response",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "x": 540,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "4419f55c.d8ecbc",
+        "type": "comment",
+        "z": "df0246a4.5a7b18",
+        "name": "presentation",
+        "info": "template is plaintext because angular uses \nsimilar variable templating to mustache.",
+        "x": 110,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "152c0ba9.b82404",
+        "type": "comment",
+        "z": "df0246a4.5a7b18",
+        "name": "last datapoint",
+        "info": "",
+        "x": 110,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "e196d913.835e18",
+        "type": "http in",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "url": "/iocp/current",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 310,
+        "y": 220,
+        "wires": [
+            [
+                "3fb9bf72.6d1ec"
+            ]
+        ]
+    },
+    {
+        "id": "3fb9bf72.6d1ec",
+        "type": "function",
+        "z": "df0246a4.5a7b18",
+        "name": "build_query",
+        "func": "// query everything\n// TODO: filter by node name\nmsg.payload = '';\n\n// sort backwards\nmsg.sort = {\"$natural\": -1};\n\n// only last (first in reverse order)\nmsg.limit = 1;\n\n// fields to return \n// msg.projection = {\n//     \"timestamp\": 1,\n//     \"t\": true, \n//     \"h\": true, \n//     \"l\": true, \n//     \"timestamp\": true,\n//     \"_id\": false, // returned if not excluded\n// };\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 530,
+        "y": 220,
+        "wires": [
+            [
+                "4a674517.c57f9c"
+            ]
+        ]
+    },
+    {
+        "id": "4a674517.c57f9c",
+        "type": "mongodb in",
+        "z": "df0246a4.5a7b18",
+        "mongodb": "2fa38bb1.9762c4",
+        "name": "nodes/nodes",
+        "collection": "nodes",
+        "operation": "find",
+        "x": 740,
+        "y": 220,
+        "wires": [
+            [
+                "d5e40102.cfe68"
+            ]
+        ]
+    },
+    {
+        "id": "d5e40102.cfe68",
+        "type": "http response",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "x": 920,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "e468497a.81d5f8",
+        "type": "comment",
+        "z": "df0246a4.5a7b18",
+        "name": "datapoint types",
+        "info": "",
+        "x": 120,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "ab9b01a8.9287c",
+        "type": "http in",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "url": "/iocp/types",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 320,
+        "y": 380,
+        "wires": [
+            [
+                "93d3a7a.1b25658"
+            ]
+        ]
+    },
+    {
+        "id": "93d3a7a.1b25658",
+        "type": "template",
+        "z": "df0246a4.5a7b18",
+        "name": "types table",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "json",
+        "syntax": "plain",
+        "template": "{\n    \"t\": { \"title\": \"temp\", \n           \"icon\": \"fa-thermometer-1\", \n           \"color\": \"w3-red\", \n           \"unit\": \"°C\" \n    },\n    \"h\": { \"title\": \"humidity\", \n           \"icon\": \"fa-cloud\", \n           \"color\": \"w3-blue\", \n           \"unit\": \"%\" \n    },\n    \"l\": { \"title\": \"luminance\", \n           \"icon\": \"fa-sun-o\", \n           \"color\": \"w3-green\", \n           \"unit\": \"lx\" \n    }\n}\n",
+        "x": 530,
+        "y": 380,
+        "wires": [
+            [
+                "3b43e1ae.b657ce"
+            ]
+        ]
+    },
+    {
+        "id": "3b43e1ae.b657ce",
+        "type": "http response",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "x": 910,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "2fa38bb1.9762c4",
+        "type": "mongodb",
+        "z": "",
+        "hostname": "127.0.0.1",
+        "port": "27017",
+        "db": "nodes",
+        "name": "nodes"
+    }
+]
