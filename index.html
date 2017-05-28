@@ -85,13 +85,13 @@
 
             app.controller("liveview", function($scope, $http, $interval) {
 
-                // TODO: get from mongo ...
-                $scope.types = {
-                    "t": { "title": "temp", "icon": "fa-thermometer-1", "color": "w3-red", "unit": String.fromCharCode(176) + "C" },
-                    "h": { "title": "humidity", "icon": "fa-cloud", "color": "w3-blue", "unit": "%" },
-                    "l": { "title": "luminance", "icon": "fa-sun-o", "color": "w3-green", "unit": "lx" },
-                };
+                // get datapoint types
+                $http.get("/iocp/types")
+                .then(function typessuccess(response){
+                    $scope.types = response.data;
+                });
 
+                // fn to get last datapoint
                 updateLiveView = function() {
                     $http.get("/iocp/current")
                     .then(function currentSuccess(response){
@@ -105,10 +105,12 @@
                     });
                 };
 
+                // fn to get time elapsed since last datapoint
                 updateTimeElapsed = function() {
                     $scope.timeelapsed = new Date(new Date() - $scope.timestamp);
                 };
 
+                // update model
                 updateLiveView();
                 updateTimeElapsed();
                 $interval( updateLiveView, 60*1000)
