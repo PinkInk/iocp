@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>chart test</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <style>
+            .temp {
+                stroke:coral;
+                stroke-width: 3;
+                fill:none;
+            }
+            .temp-point {
+                stroke: grey;
+                stroke-width: 1;
+                fill: none;
+            }
+            .temp-axis {
+                stroke: coral;
+            }
+            .humidity {
+                stroke:mediumorchid;
+                stroke-width: 3;
+                fill: none;
+            }
+            .humidity-axis {
+                stroke:mediumorchid;
+            }
+            .luminance {
+                stroke: darkslateblue;
+                stroke-width: 3;
+                fill: none;
+            }
+            .luminance-axis {
+                stroke:darkslateblue;
+            }
+        </style>
+    </head>
+
+    <body ng-app="app" class="w3-light-grey">
+
+        <div ng-controller="graph"
+            class="w3-container"
+        >
+            <svg id="graph">
+            </svg>
+        </div>
+
+        <script>
+
+            var app = angular.module("app", []);
+
+            app.controller("graph", function($scope, $http) {
+
+                $http.get("/iocp/range?start=2017-05-20T00:00:00.000Z&end=2017-05-21T00:00:00.000Z")
+                .then(function(response) {
+
+                    data = response.data;
+
+                    margin = {top: 10, right: 30, bottom: 30, left: 30};
+                    width = 800 - margin.right - margin.left;
+                    height = 400 - margin.top - margin.bottom;
+
+                    svg = d3.select("#graph")
+                        .attr("width", width + margin.right + margin.left)
+                        .attr("height", height + margin.top + margin.bottom);
+                    chart = svg.append("g")
+                        .attr("transform", "translate(" + margin.left + ", " + margin.top +")" );
+
+                    xscale = d3.scaleTime()
+                        .domain([new Date("2017-05-20T00:00:00.000Z"), new Date("2017-05-20T23:59:59.999Z")])
+                        .range([0, width]);
+
+                    ytscale = d3.scaleLinear()
+                        .domain([20, 80])
+                        .range([height, 0]); // invert y scale
+
+                    yhscale = d3.scaleLinear()
+                        .domain([0, 100])
+                        .range([height, 0]); // invert y scale
+
+                    ylscale = d3.scaleLinear()
+                        .domain([0, 65535])
+                        .range([height, 0]);
+
+                    x = (d) => xscale(new Date(d.timestamp));
+                    yt = (d) => ytscale(d.t);
+                    yh = (d) => yhscale(d.h);
+                    yl = (d) => ylscale(d.l);
+
+                    chart.append("g")
+                        .call(d3.axisLeft(ytscale))
+                        .attr("class", "temp-axis");
+
+                    chart.append("g")
+                        .call(d3.axisRight(yhscale))
+                        .attr("transform", "translate(" + width + ",0)")
+                        .attr("class", "humidity-axis");
+
+                    chart.append("g")
+                        .call(d3.axisBottom(xscale))
+                        .attr("transform", "translate(0," + height + ")");
+
+                    templine = d3.line()
+                        .x( x )
+                        .y( yt )
+                        // curveLinear, curveStepBefore, curveStepAfter
+                        // curveBasis, curveBundle
+                        // curveCardinal, curveNatural
+                        .curve(d3.curveBasis);
+
+                    chart.append("path")
+                        .datum(data)
+                        .attr("d", templine)
+                        .attr("class", "temp");
+
+                    // chart.selectAll(".temp-point")
+                    //     .data(data)
+                    //     .enter().append("circle")
+                    //         .attr("cx", x )
+                    //         .attr("cy", yt )
+                    //         .attr("r", 3)
+                    //         .attr("class","temp-point");
+
+                    humidityline = d3.line()
+                        .x( x )
+                        .y( yh )
+                        .curve(d3.curveBasis);
+
+                    chart.append("path")
+                        .datum(data)
+                        .attr("d", humidityline)
+                        .attr("class", "humidity");
+
+                    luminanceline = d3.line()
+                        .x( x )
+                        .y( yl )
+                        .curve(d3.curveBasis);
+
+                    chart.append("path")
+                        .datum(data)
+                        .attr("d", luminanceline)
+                        .attr("class", "luminance");
+
+                });
+
+            });
+
+        </script>
+
+    </body>
+
+</html>
