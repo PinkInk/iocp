@@ -12,7 +12,7 @@
 
     <body ng-app="app" class="w3-light-grey">
 
-        <div ng-controller="graph"
+        <div ng-controller="chart"
             class="w3-container"
         >
             <div>
@@ -35,35 +35,34 @@
 
             var app = angular.module("app", []);
 
-            app.controller("graph", function($scope, $http) {
+            app.controller("chart", function($scope, $http) {
 
-                // populate node selector
+                // node selector
                 $http.get("/iocp/nodes")
                     .then(function(response){
                         $scope.nodes = response.data;
                         $scope.selectedNode = $scope.nodes[0];
                     });
 
-                // date range handler
+                // range handlers
                 $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
                 $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
                 $scope.daysadd = function(sdt, edt, i) {
                     sdt.setDate(sdt.getDate()+i);
                     edt.setDate(edt.getDate()+i);
-                    update();
+                    linechartUpdate();
                 };
                 $scope.monthsadd = function(sdt, edt, i) {
                     sdt.setMonth(sdt.getMonth()+i);
                     edt.setMonth(edt.getMonth()+i);
-                    update();
+                    linechartUpdate();
                 };
 
-
+                // chart setup
                 margin = {top: 10, right: 50, bottom: 50, left: 50};
                 width = 900 - margin.right - margin.left;
                 height = 600 - margin.top - margin.bottom;
 
-                // chart
                 svg = d3.select("#graph")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom);
@@ -86,7 +85,7 @@
                     .domain([0, 65535])
                     .range([height, 0]);
 
-                // axis
+                // temp axis & label
                 svg.append("g")
                     .call(d3.axisLeft(ytscale))
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -101,6 +100,7 @@
                     // TODO: units from types table
                     .text("Temperature (°C)");
 
+                // luminance axis & label
                 svg.append("g")
                     .call(d3.axisRight(yhscale))
                     .attr("transform", "translate(" + (width + margin.right) + "," + margin.top + ")");
@@ -115,10 +115,12 @@
                     // TODO: units from types table
                     .text("Humidity (%)");
 
-                update = function() {
+                // draw chart and time axis
+                linechartUpdate = function() {
                     $http.get("/iocp/range?start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
                         .then(function(response) {
 
+                        // clear chart content
                         chart.selectAll("*").remove();
 
                         data = response.data;
@@ -183,8 +185,8 @@
                     });
                 };
 
-                update();
-
+                // update chart
+                linechartUpdate();
 
             });
 
