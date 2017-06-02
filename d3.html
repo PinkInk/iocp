@@ -104,9 +104,6 @@
                     templine = d3.line()
                         .x( x )
                         .y( yt )
-                        // curveLinear, curveStepBefore, curveStepAfter
-                        // curveBasis, curveBundle
-                        // curveCardinal, curveNatural
                         .curve(d3.curveBasis);
 
                     chart.append("path")
