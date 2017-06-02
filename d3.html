@@ -59,9 +59,9 @@
 
                     data = response.data;
 
-                    margin = {top: 10, right: 30, bottom: 30, left: 30};
-                    width = 800 - margin.right - margin.left;
-                    height = 400 - margin.top - margin.bottom;
+                    margin = {top: 10, right: 50, bottom: 50, left: 50};
+                    width = 900 - margin.right - margin.left;
+                    height = 600 - margin.top - margin.bottom;
 
                     // chart
                     svg = d3.select("#graph")
@@ -91,13 +91,39 @@
                     chart.append("g")
                         .call(d3.axisLeft(ytscale));
 
+                    svg.append("text")
+                        .attr("transform", "rotate(-90)")
+                        // coord system reversed due rotation
+                        .attr("x", 0-(height/2))
+                        .attr("y", 0)
+                        .attr("dy", "1em")
+                        .style("text-anchor", "middle")
+                        // TODO: units from types table
+                        .text("Temperature (°C)");
+
                     chart.append("g")
                         .call(d3.axisRight(yhscale))
                         .attr("transform", "translate(" + width + ",0)");
 
+                    svg.append("text")
+                        .attr("transform", "rotate(-90)")
+                        // coord system reversed due rotation
+                        .attr("x", 0-(height/2))
+                        .attr("y", width+margin.left+margin.right)
+                        .attr("dy", "-1em")
+                        .style("text-anchor", "middle")
+                        // TODO: units from types table
+                        .text("Humidity (%)");
+
                     chart.append("g")
                         .call(d3.axisBottom(xscale))
                         .attr("transform", "translate(0," + height + ")");
+
+                    svg.append("text")
+                        .attr("x", (width+margin.left+margin.top)/2)
+                        .attr("y", height+margin.top+margin.bottom)
+                        .attr("text-anchor", "middle")
+                        .text("Date Time");
 
                     // scale point fns
                     x = (d) => xscale(new Date(d.timestamp));
