@@ -8,37 +8,6 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
-        <style>
-            .temp {
-                stroke:coral;
-                stroke-width: 3;
-                fill:none;
-            }
-            .temp-point {
-                stroke: grey;
-                stroke-width: 1;
-                fill: none;
-            }
-            .temp-axis {
-                stroke: coral;
-            }
-            .humidity {
-                stroke:mediumorchid;
-                stroke-width: 3;
-                fill: none;
-            }
-            .humidity-axis {
-                stroke:mediumorchid;
-            }
-            .luminance {
-                stroke: darkslateblue;
-                stroke-width: 3;
-                fill: none;
-            }
-            .luminance-axis {
-                stroke:darkslateblue;
-            }
-        </style>
     </head>
 
     <body ng-app="app" class="w3-light-grey">
@@ -46,6 +15,18 @@
         <div ng-controller="graph"
             class="w3-container"
         >
+            <div>
+                Node:
+                <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
+            </div>
+            <div>
+                Date:
+                <input name="decmonthsstart" type="button" ng-click="monthsadd(start, -1)" value="<<"/>
+                <input name="decdaysstart" type="button" ng-click="daysadd(start, -1)" value="<"/>
+                <input name="start" id="start" value="{{start | date : 'yyyy-MM-dd'}}" type="date"/>
+                <input name="incdaysstart" type="button" ng-click="daysadd(start, +1)" value=">"/>
+                <input name="incmonthsstart" type="button" ng-click="monthsadd(start, +1)" value=">>"/>
+            </div>
             <svg id="graph">
             </svg>
         </div>
@@ -56,6 +37,23 @@
 
             app.controller("graph", function($scope, $http) {
 
+                // populate node selector
+                $http.get("/iocp/nodes")
+                    .then(function(response){
+                        $scope.nodes = response.data;
+                        $scope.selectedNode = $scope.nodes[0];
+                    });
+
+                // date range handler
+                $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
+                $scope.daysadd = function(dt, i) {
+                    dt.setDate(dt.getDate()+i);
+                };
+                $scope.monthsadd = function(dt, i) {
+                    dt.setMonth(dt.getMonth()+i);
+                };
+
+                // chart
                 $http.get("/iocp/range?start=2017-05-20T00:00:00.000Z&end=2017-05-21T00:00:00.000Z")
                 .then(function(response) {
 
@@ -93,13 +91,11 @@
                     yl = (d) => ylscale(d.l);
 
                     chart.append("g")
-                        .call(d3.axisLeft(ytscale))
-                        .attr("class", "temp-axis");
+                        .call(d3.axisLeft(ytscale));
 
                     chart.append("g")
                         .call(d3.axisRight(yhscale))
-                        .attr("transform", "translate(" + width + ",0)")
-                        .attr("class", "humidity-axis");
+                        .attr("transform", "translate(" + width + ",0)");
 
                     chart.append("g")
                         .call(d3.axisBottom(xscale))
@@ -116,7 +112,8 @@
                     chart.append("path")
                         .datum(data)
                         .attr("d", templine)
-                        .attr("class", "temp");
+                        // TODO: should come from sample types query
+                        .attr("style", "stroke:#f44336; stroke-width: 3; fill:none;");
 
                     // chart.selectAll(".temp-point")
                     //     .data(data)
@@ -134,7 +131,8 @@
                     chart.append("path")
                         .datum(data)
                         .attr("d", humidityline)
-                        .attr("class", "humidity");
+                        // TODO: should come from sample types query
+                        .attr("style", "stroke:#2196F3; stroke-width: 3; fill:none;");
 
                     luminanceline = d3.line()
                         .x( x )
@@ -144,7 +142,8 @@
                     chart.append("path")
                         .datum(data)
                         .attr("d", luminanceline)
-                        .attr("class", "luminance");
+                        // TODO: should come from sample types query
+                        .attr("style", "stroke:#4CAF50; stroke-width: 3; fill:none;");
 
                 });
 
