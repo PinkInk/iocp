@@ -63,12 +63,14 @@
                     width = 800 - margin.right - margin.left;
                     height = 400 - margin.top - margin.bottom;
 
+                    // chart
                     svg = d3.select("#graph")
                         .attr("width", width + margin.right + margin.left)
                         .attr("height", height + margin.top + margin.bottom);
                     chart = svg.append("g")
                         .attr("transform", "translate(" + margin.left + ", " + margin.top +")" );
 
+                    // scales
                     xscale = d3.scaleTime()
                         .domain([new Date("2017-05-20T00:00:00.000Z"), new Date("2017-05-20T23:59:59.999Z")])
                         .range([0, width]);
@@ -85,11 +87,7 @@
                         .domain([0, 65535])
                         .range([height, 0]);
 
-                    x = (d) => xscale(new Date(d.timestamp));
-                    yt = (d) => ytscale(d.t);
-                    yh = (d) => yhscale(d.h);
-                    yl = (d) => ylscale(d.l);
-
+                    // axis
                     chart.append("g")
                         .call(d3.axisLeft(ytscale));
 
@@ -101,6 +99,13 @@
                         .call(d3.axisBottom(xscale))
                         .attr("transform", "translate(0," + height + ")");
 
+                    // scale point fns
+                    x = (d) => xscale(new Date(d.timestamp));
+                    yt = (d) => ytscale(d.t);
+                    yh = (d) => yhscale(d.h);
+                    yl = (d) => ylscale(d.l);
+
+                    // temperature
                     templine = d3.line()
                         .x( x )
                         .y( yt )
@@ -120,6 +125,7 @@
                     //         .attr("r", 3)
                     //         .attr("class","temp-point");
 
+                    // humidity
                     humidityline = d3.line()
                         .x( x )
                         .y( yh )
@@ -131,6 +137,7 @@
                         // TODO: should come from sample types query
                         .attr("style", "stroke:#2196F3; stroke-width: 3; fill:none;");
 
+                    // luminance
                     luminanceline = d3.line()
                         .x( x )
                         .y( yl )
