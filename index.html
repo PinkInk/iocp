@@ -21,16 +21,19 @@
 
         <!-- header -->
         <div class="w3-container w3-dark-grey w3-top">
-            <p class="w3-half w3-left-align">the Internet Of Chilli Peppers</p>
+            <p class="w3-half w3-left-align">
+                Node: <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
+            </p>
+            <p class="w3-half w3-right-align">the Internet Of Chilli Peppers</p>
         </div>
 
 
         <div class="w3-main" style="margin-top:60px;">
 
-            <!-- live view -->
+            <!-- most recent datapoint -->
             <div class="w3-container">
 
-                <!-- timestamps -->
+                <!-- timestamp -->
                 <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
                     <div class="w3-display-container tablet">
                         <div class="w3-display-topleft fa fa-clock-o w3-xxxlarge"></div>
@@ -46,7 +49,7 @@
                     </div>
                 </div>
 
-                <!-- datapoints -->
+                <!-- samples -->
                 <div ng-repeat="point in datapoints"
                     class="w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black"
                 >
@@ -59,24 +62,24 @@
 
             </div>
 
-            <!-- chart -->
             <div class="w3-container">
-                <!-- controls -->
+
+                <!-- chart controls -->
                 <div>
                     <i class="w3-xlarge fa fa-line-chart"></i>
-                    &nbsp;&nbsp;Node:
-                    <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
                     &nbsp;&nbsp;Date:
                     <input name="decmonthsstart" type="button" ng-click="monthsadd(start, end, -1)" value="<<"/>
                     <input name="decdaysstart" type="button" ng-click="daysadd(start, end, -1)" value="<"/>
                     <input name="start" id="start" value="{{start | date : 'yyyy-MM-dd'}}" type="date"/>
                     <input name="incdaysstart" type="button" ng-click="daysadd(start, end, +1)" value=">"/>
                     <input name="incmonthsstart" type="button" ng-click="monthsadd(start, end, +1)" value=">>"/>
-                    &nbsp;&nbsp;
-                    <i class="w3-xlarge fa fa fa-refresh" ng-click="linechartUpdate()"></i>
+                    <!--&nbsp;&nbsp;
+                    <i class="w3-xlarge fa fa fa-refresh" ng-click="linechartUpdate()"></i>-->
                 </div>
-                <!-- graphic -->
+
+                <!-- chart -->
                 <svg id="graph"></svg>
+
             </div>
 
         </div>

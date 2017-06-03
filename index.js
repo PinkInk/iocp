@@ -4,7 +4,7 @@ app.controller("main", function($scope, $http, $interval) {
 
     // update most recent datapoint
     updateLiveView = function() {
-        $http.get("/iocp/current")
+        $http.get("/iocp/current?node="+ $scope.selectedNode)
             .then(function(response) {
                 $scope.sample = response.data[0];
                 $scope.timestamp = new Date($scope.sample["timestamp"]);
@@ -39,7 +39,7 @@ app.controller("main", function($scope, $http, $interval) {
 
     // update chart content - lines and time axis
     linechartUpdate = function() {
-        $http.get("/iocp/range?start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
+        $http.get("/iocp/range?node="+ $scope.selectedNode + "&start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
             .then(function(response) {
 
             data = response.data;
