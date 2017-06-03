@@ -2,7 +2,7 @@ var app = angular.module("app", []);
 
 app.controller("main", function($scope, $http, $interval) {
 
-    // most recent datapoint
+    // update most recent datapoint
     updateLiveView = function() {
         $http.get("/iocp/current")
             .then(function(response) {
@@ -16,13 +16,16 @@ app.controller("main", function($scope, $http, $interval) {
             });
     };
 
-    // time elapsed since most recent datapoint
+    // update time elapsed since most recent datapoint
     updateTimeElapsed = function() {
         $scope.timeelapsed = new Date(new Date() - $scope.timestamp);
     };
 
+    // chart range
     $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
     $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
+
+    // chart range button handlers
     $scope.daysadd = function(sdt, edt, i) {
         sdt.setDate(sdt.getDate()+i);
         edt.setDate(edt.getDate()+i);
@@ -34,66 +37,36 @@ app.controller("main", function($scope, $http, $interval) {
         linechartUpdate();
     };
 
-
-    // draw lines and time axis
+    // update chart content - lines and time axis
     linechartUpdate = function() {
         $http.get("/iocp/range?start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
             .then(function(response) {
 
+            data = response.data;
+
             // clear chart content
             chart.selectAll("*").remove();
 
-            data = response.data;
-
-            // x (time) scale
+            // update x (time) scale
             xscale = d3.scaleTime()
                 .domain([$scope.start, $scope.end])
                 .range([0, width]);
-
             chart.append("g")
                 .call(d3.axisBottom(xscale))
                 .attr("transform", "translate(0," + (height) + ")");
 
-            svg.append("text")
-                .attr("x", (width+margin.left+margin.right)/2)
-                .attr("y", height+margin.top+margin.bottom)
-                .attr("text-anchor", "middle")
-                .text("Date Time");
-
-            // scale point fns
-            x = (d) => xscale(new Date(d.timestamp));
-            yt = (d) => ytscale(d.t);
-            yh = (d) => yhscale(d.h);
-            yl = (d) => ylscale(d.l);
-
-            // temperature
-            templine = d3.line()
-                .x( x )
-                .y( yt )
-                .curve(d3.curveBasis);
-
+            // draw lines
+            // temperature -->
             chart.append("path")
                 .datum(data)
                 .attr("d", templine)
                 .attr("style", $scope.types["t"].linestyle);
-
-            // humidity
-            humidityline = d3.line()
-                .x( x )
-                .y( yh )
-                .curve(d3.curveBasis);
-
+            // humidity -->
             chart.append("path")
                 .datum(data)
                 .attr("d", humidityline)
                 .attr("style", $scope.types["h"].linestyle);
-
-            // luminance
-            luminanceline = d3.line()
-                .x( x )
-                .y( yl )
-                .curve(d3.curveBasis);
-
+            // luminance -->
             chart.append("path")
                 .datum(data)
                 .attr("d", luminanceline)
@@ -102,6 +75,7 @@ app.controller("main", function($scope, $http, $interval) {
         });
     };
 
+    // MAIN
     $http.get("/iocp/nodes")
         .then(function(response) {
             $scope.nodes = response.data;
@@ -136,42 +110,63 @@ app.controller("main", function($scope, $http, $interval) {
             ytscale = d3.scaleLinear()
                 .domain([20, 80])
                 .range([height, 0]); // invert y scale
-
             yhscale = d3.scaleLinear()
                 .domain([0, 100])
                 .range([height, 0]); // invert y scale
-
             ylscale = d3.scaleLinear()
                 .domain([0, 65535])
                 .range([height, 0]);
 
-            // temp axis & label
+            // axis & labels
+            // temperature ->
             svg.append("g")
                 .call(d3.axisLeft(ytscale))
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
             svg.append("text")
-                .attr("transform", "rotate(-90)")
-                // coord system reversed due rotation
+                .attr("transform", "rotate(-90)") // coord system reversed due rotation
                 .attr("x", -height/2)
                 .attr("y", 0)
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
                 .text("Temperature (" + $scope.types["t"].unit + ")");
-
-            // luminance axis & label
+            // luminance -->
             svg.append("g")
                 .call(d3.axisRight(yhscale))
                 .attr("transform", "translate(" + (width + margin.right) + "," + margin.top + ")");
-
             svg.append("text")
-                .attr("transform", "rotate(-90)")
-                // coord system reversed due rotation
+                .attr("transform", "rotate(-90)") // coord system reversed due rotation
                 .attr("x", 0-(height/2))
                 .attr("y", width+margin.left+margin.right)
                 .attr("dy", "-1em")
                 .style("text-anchor", "middle")
                 .text("Humidity (" + $scope.types["h"].unit+ ")");
+
+            // time axis label
+            svg.append("text")
+                .attr("x", (width+margin.left+margin.right)/2)
+                .attr("y", height+margin.top+margin.bottom)
+                .attr("text-anchor", "middle")
+                .text("Date Time");
+
+            // scale point fns
+            x = (d) => xscale(new Date(d.timestamp));
+            yt = (d) => ytscale(d.t);
+            yh = (d) => yhscale(d.h);
+            yl = (d) => ylscale(d.l);
+
+            // line functions
+            templine = d3.line()
+                .x( x )
+                .y( yt )
+                .curve(d3.curveBasis);
+            humidityline = d3.line()
+                .x( x )
+                .y( yh )
+                .curve(d3.curveBasis);
+            luminanceline = d3.line()
+                .x( x )
+                .y( yl )
+                .curve(d3.curveBasis);
 
             linechartUpdate();
         });
