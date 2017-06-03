@@ -168,6 +168,7 @@ app.controller("main", function($scope, $http, $interval) {
                 .y( yl )
                 .curve(d3.curveBasis);
 
+            // draw initial (today's) chart
             linechartUpdate();
         });
 
