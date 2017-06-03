@@ -14,12 +14,6 @@ app.run(function($rootScope, $http) {
 // liveview controller ---------------------------------------------
 app.controller("liveview", function($scope, $http, $interval) {
 
-    // get datapoint types
-    // $http.get("/iocp/types")
-    // .then(function typessuccess(response){
-    //     $scope.types = response.data;
-    // });
-
     // fn to get last datapoint
     updateLiveView = function() {
         $http.get("/iocp/current")
