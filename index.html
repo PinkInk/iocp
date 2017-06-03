@@ -17,7 +17,7 @@
         </style>
     </head>
 
-    <body ng-app="app" class="w3-light-grey">
+    <body ng-app="app" ng-controller="main" class="w3-light-grey">
 
         <!-- header -->
         <div class="w3-container w3-dark-grey w3-top">
@@ -28,9 +28,7 @@
         <div class="w3-main" style="margin-top:60px;">
 
             <!-- live view -->
-            <div ng-controller="liveview"
-                class="w3-container"
-            >
+            <div class="w3-container">
 
                 <!-- timestamps -->
                 <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
@@ -62,7 +60,7 @@
             </div>
 
             <!-- chart -->
-            <div ng-controller="chart" class="w3-container">
+            <div class="w3-container">
                 <!-- controls -->
                 <div>
                     <i class="w3-xlarge fa fa-line-chart"></i>

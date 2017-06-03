@@ -1,3 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>iocp</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <style>
+            .tablet {
+                height: 150px;
+                width: 150px;
+            }
+        </style>
+    </head>
+
+    <body ng-app="app" ng-controller="main" class="w3-light-grey">
+
+        <!-- header -->
+        <div class="w3-container w3-dark-grey w3-top">
+            <p class="w3-half w3-left-align">the Internet Of Chilli Peppers</p>
+        </div>
+
+
+        <div class="w3-main" style="margin-top:60px;">
+
+            <!-- live view -->
+            <div class="w3-container">
+
+                <!-- timestamps -->
+                <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
+                    <div class="w3-display-container tablet">
+                        <div class="w3-display-topleft fa fa-clock-o w3-xxxlarge"></div>
+                        <div class="w3-display-topright w3-right-align">
+                            <span class="w3-small" ng-bind="timestamp | date"></span><br/>
+                            <span class="w3-large" ng-bind="timestamp | date : 'HH:MM'"></span><br/>
+                            <i class="w3-small">Last seen:</i><br/>
+                            <i class="w3-small" ng-bind="timeelapsed | date : 'd'"></i>
+                            <i class="w3-small"> days</i>
+                            <i class="w3-small" ng-bind="timeelapsed | date : 'H:MM:ss'"></i>
+                        </div>
+                        <div class="w3-display-bottomleft"><h3>time</h3></div>
+                    </div>
+                </div>
+
+                <!-- datapoints -->
+                <div ng-repeat="point in datapoints"
+                    class="w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black"
+                >
+                    <div class="w3-display-container tablet">
+                        <div class="w3-display-topleft fa {{types[point].icon}} w3-xxxlarge"></div>
+                        <div class="w3-display-topright"><h2>{{sample[point] | number:1}}{{types[point].unit}}</h2></div>
+                        <div class="w3-display-bottomleft"><h3>{{types[point].title}}</h3></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- chart -->
+            <div class="w3-container">
+                <!-- controls -->
+                <div>
+                    <i class="w3-xlarge fa fa-line-chart"></i>
+                    &nbsp;&nbsp;Node:
+                    <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
+                    &nbsp;&nbsp;Date:
+                    <input name="decmonthsstart" type="button" ng-click="monthsadd(start, end, -1)" value="<<"/>
+                    <input name="decdaysstart" type="button" ng-click="daysadd(start, end, -1)" value="<"/>
+                    <input name="start" id="start" value="{{start | date : 'yyyy-MM-dd'}}" type="date"/>
+                    <input name="incdaysstart" type="button" ng-click="daysadd(start, end, +1)" value=">"/>
+                    <input name="incmonthsstart" type="button" ng-click="monthsadd(start, end, +1)" value=">>"/>
+                    &nbsp;&nbsp;
+                    <!--<i class="w3-xlarge fa fa fa-refresh" ng-click="linechartUpdate()"></i>-->
+                </div>
+                <!-- graphic -->
+                <svg id="graph"></svg>
+            </div>
+
+        </div>
+
+        <script>
+
 var app = angular.module("app", []);
 
 app.controller("main", function($scope, $http, $interval) {
@@ -177,3 +261,9 @@ app.controller("main", function($scope, $http, $interval) {
         });
 
 });
+
+        </script>
+
+    </body>
+
+</html>
