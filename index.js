@@ -1,13 +1,24 @@
 var app = angular.module("app", []);
 
-// liveview controller ---------------------------------------------
-app.controller("liveview", function($scope, $http, $interval) {
+// init shared data
+app.run(function($rootScope, $http) {
 
     // get datapoint types
     $http.get("/iocp/types")
     .then(function typessuccess(response){
-        $scope.types = response.data;
+        $rootScope.types = response.data;
     });
+
+});
+
+// liveview controller ---------------------------------------------
+app.controller("liveview", function($scope, $http, $interval) {
+
+    // get datapoint types
+    // $http.get("/iocp/types")
+    // .then(function typessuccess(response){
+    //     $scope.types = response.data;
+    // });
 
     // fn to get last datapoint
     updateLiveView = function() {
