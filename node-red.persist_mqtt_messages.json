@@ -49,146 +49,6 @@
         "wires": []
     },
     {
-        "id": "f86cc430.964698",
-        "type": "ui_chart",
-        "z": "822f3378.e131c",
-        "tab": "c563ca4d.58f648",
-        "name": "Temperature & Humidity",
-        "group": "Sensor",
-        "order": 1,
-        "interpolate": "basis",
-        "nodata": "No Data",
-        "removeOlder": 1,
-        "removeOlderUnit": "86400",
-        "x": 950,
-        "y": 320,
-        "wires": [
-            [],
-            []
-        ]
-    },
-    {
-        "id": "5835caca.87c324",
-        "type": "change",
-        "z": "822f3378.e131c",
-        "name": "temp",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "payload.t",
-                "tot": "msg"
-            },
-            {
-                "t": "set",
-                "p": "topic",
-                "pt": "msg",
-                "to": "tempC",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 690,
-        "y": 300,
-        "wires": [
-            [
-                "f86cc430.964698"
-            ]
-        ]
-    },
-    {
-        "id": "8ab38102.491c",
-        "type": "change",
-        "z": "822f3378.e131c",
-        "name": "humidity",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "payload.h",
-                "tot": "msg"
-            },
-            {
-                "t": "set",
-                "p": "topic",
-                "pt": "msg",
-                "to": "humid%",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 700,
-        "y": 360,
-        "wires": [
-            [
-                "f86cc430.964698"
-            ]
-        ]
-    },
-    {
-        "id": "4944738d.f280ec",
-        "type": "ui_chart",
-        "z": "822f3378.e131c",
-        "tab": "c563ca4d.58f648",
-        "name": "Luminance",
-        "group": "Sensor",
-        "order": "2",
-        "interpolate": "basis",
-        "nodata": "No Data",
-        "removeOlder": 1,
-        "removeOlderUnit": "86400",
-        "x": 910,
-        "y": 420,
-        "wires": [
-            [],
-            []
-        ]
-    },
-    {
-        "id": "e7291866.9cea18",
-        "type": "change",
-        "z": "822f3378.e131c",
-        "name": "luminance",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "payload.l",
-                "tot": "msg"
-            },
-            {
-                "t": "set",
-                "p": "topic",
-                "pt": "msg",
-                "to": "luminance",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 710,
-        "y": 420,
-        "wires": [
-            [
-                "4944738d.f280ec"
-            ]
-        ]
-    },
-    {
         "id": "fb4844e8.0c1d28",
         "type": "function",
         "z": "822f3378.e131c",
@@ -201,9 +61,6 @@
         "wires": [
             [
                 "6c704fb3.2ef97",
-                "5835caca.87c324",
-                "8ab38102.491c",
-                "e7291866.9cea18",
                 "22e76bb8.6de9b4"
             ]
         ]
@@ -248,13 +105,5 @@
         "port": "27017",
         "db": "nodes",
         "name": "nodes"
-    },
-    {
-        "id": "c563ca4d.58f648",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Home",
-        "icon": "dashboard",
-        "order": "1"
     }
 ]
