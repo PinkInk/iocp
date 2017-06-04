@@ -1,194 +1,82 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>chart test</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
     </head>
 
-    <body ng-app="app" class="w3-light-grey">
+    <body>
 
-        <div ng-controller="chart"
-            class="w3-container"
-        >
-            <div>
-                Node:
-                <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
-            </div>
-            <div>
-                Date:
-                <input name="decmonthsstart" type="button" ng-click="monthsadd(start, end, -1)" value="<<"/>
-                <input name="decdaysstart" type="button" ng-click="daysadd(start, end, -1)" value="<"/>
-                <input name="start" id="start" value="{{start | date : 'yyyy-MM-dd'}}" type="date"/>
-                <input name="incdaysstart" type="button" ng-click="daysadd(start, end, +1)" value=">"/>
-                <input name="incmonthsstart" type="button" ng-click="monthsadd(start, end, +1)" value=">>"/>
-            </div>
-            <svg id="graph">
-            </svg>
-        </div>
+        <svg id="canvas"></svg>
 
         <script>
 
-            var app = angular.module("app", []);
+            width = 900;
+            height = 600;
+            margin = { left: 50, right: 50, top: 10, bottom: 50, };
 
-            app.controller("chart", function($scope, $http) {
+            data = Array.from(Array(20)).map(
+                function() {
+                    r = Math.random()*100;
+                    return {
+                        r: r,
+                        cx: r+(Math.random()*(width-(2*r))),
+                        cy: r+(Math.random()*(height-(2*r))),
+                        vx: Math.random()*width/r,
+                        vy: Math.random()*height/r,
+                    };
+                }
+            );
 
-                // node selector
-                $http.get("/iocp/nodes")
-                    .then(function(response){
-                        $scope.nodes = response.data;
-                        $scope.selectedNode = $scope.nodes[0];
-                    });
+            canvas = d3.select("#canvas")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
 
-                // range handlers
-                $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
-                $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
-                $scope.daysadd = function(sdt, edt, i) {
-                    sdt.setDate(sdt.getDate()+i);
-                    edt.setDate(edt.getDate()+i);
-                    linechartUpdate();
-                };
-                $scope.monthsadd = function(sdt, edt, i) {
-                    sdt.setMonth(sdt.getMonth()+i);
-                    edt.setMonth(edt.getMonth()+i);
-                    linechartUpdate();
-                };
+            chart = canvas.append("g")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-                // chart setup
-                margin = {top: 10, right: 50, bottom: 50, left: 50};
-                width = 900 - margin.right - margin.left;
-                height = 600 - margin.top - margin.bottom;
+            chart.append("rect")
+                .attr("x", 0).attr("y", 0)
+                .attr("width", width).attr("height", height)
+                .attr("style", "fill:none; stroke:lightgrey;")
 
-                svg = d3.select("#graph")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom);
+            function update(data) {
+                circles = chart.selectAll("circle")
+                    .data(data)
 
-                chart = svg.append("g")
-                    .attr("transform", "translate(" + margin.left + ", " + margin.top +")" )
-                    .attr("width", width)
-                    .attr("height", height);
+                circles.exit().remove();
 
-                // y scales
-                ytscale = d3.scaleLinear()
-                    .domain([20, 80])
-                    .range([height, 0]); // invert y scale
+                circles.enter().append("circle")
+                    .attr("style", "fill-opacity:.5; stroke-width:1; stroke:grey;")
+                    .style("fill", (_) => "hsl(" + Math.random()*360+",100%,50%)")
+                .merge(circles)
+                    .attr("cx", (d)=>d.cx)
+                    .attr("cy", (d)=>d.cy)
+                    .attr("r", (d)=>d.r)
+            };
 
-                yhscale = d3.scaleLinear()
-                    .domain([0, 100])
-                    .range([height, 0]); // invert y scale
+            update(data);
 
-                ylscale = d3.scaleLinear()
-                    .domain([0, 65535])
-                    .range([height, 0]);
-
-                // temp axis & label
-                svg.append("g")
-                    .call(d3.axisLeft(ytscale))
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-                svg.append("text")
-                    .attr("transform", "rotate(-90)")
-                    // coord system reversed due rotation
-                    .attr("x", -height/2)
-                    .attr("y", 0)
-                    .attr("dy", "1em")
-                    .style("text-anchor", "middle")
-                    // TODO: units from types table
-                    .text("Temperature (°C)");
-
-                // luminance axis & label
-                svg.append("g")
-                    .call(d3.axisRight(yhscale))
-                    .attr("transform", "translate(" + (width + margin.right) + "," + margin.top + ")");
-
-                svg.append("text")
-                    .attr("transform", "rotate(-90)")
-                    // coord system reversed due rotation
-                    .attr("x", 0-(height/2))
-                    .attr("y", width+margin.left+margin.right)
-                    .attr("dy", "-1em")
-                    .style("text-anchor", "middle")
-                    // TODO: units from types table
-                    .text("Humidity (%)");
-
-                // draw chart and time axis
-                linechartUpdate = function() {
-                    $http.get("/iocp/range?start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
-                        .then(function(response) {
-
-                        // clear chart content
-                        chart.selectAll("*").remove();
-
-                        data = response.data;
-
-                        // x (time) scale
-                        xscale = d3.scaleTime()
-                            .domain([$scope.start, $scope.end])
-                            .range([0, width]);
-
-                        chart.append("g")
-                            .call(d3.axisBottom(xscale))
-                            .attr("transform", "translate(0," + (height) + ")");
-
-                        svg.append("text")
-                            .attr("x", (width+margin.left+margin.right)/2)
-                            .attr("y", height+margin.top+margin.bottom)
-                            .attr("text-anchor", "middle")
-                            .text("Date Time");
-
-                        // scale point fns
-                        x = (d) => xscale(new Date(d.timestamp));
-                        yt = (d) => ytscale(d.t);
-                        yh = (d) => yhscale(d.h);
-                        yl = (d) => ylscale(d.l);
-
-                        // temperature
-                        templine = d3.line()
-                            .x( x )
-                            .y( yt )
-                            .curve(d3.curveBasis);
-
-                        chart.append("path")
-                            .datum(data)
-                            .attr("d", templine)
-                            // TODO: should come from sample types query
-                            .attr("style", "stroke:#f44336; stroke-width: 3; fill:none;");
-
-                        // humidity
-                        humidityline = d3.line()
-                            .x( x )
-                            .y( yh )
-                            .curve(d3.curveBasis);
-
-                        chart.append("path")
-                            .datum(data)
-                            .attr("d", humidityline)
-                            // TODO: should come from sample types query
-                            .attr("style", "stroke:#2196F3; stroke-width: 3; fill:none;");
-
-                        // luminance
-                        luminanceline = d3.line()
-                            .x( x )
-                            .y( yl )
-                            .curve(d3.curveBasis);
-
-                        chart.append("path")
-                            .datum(data)
-                            .attr("d", luminanceline)
-                            // TODO: should come from sample types query
-                            .attr("style", "stroke:#4CAF50; stroke-width: 3; fill:none;");
-
-                    });
-                };
-
-                // update chart
-                linechartUpdate();
-
-            });
+            d3.interval(
+                function() {
+                    data.forEach(
+                        // function(e,i,a) { // element, index, array
+                        function(e) { // shortcut, not using i,a
+                            if (e.cx+e.vx+e.r > width || e.cx+e.vx-e.r < 0)
+                                e.vx = -e.vx;
+                            if (e.cy+e.vy+e.r > height || e.cy+e.vy-e.r < 0)
+                                e.vy=-e.vy;
+                            e.cx = e.cx + e.vx;
+                            e.cy = e.cy + e.vy;
+                        }
+                    );
+                    update(data);
+                },
+                60
+            );
 
         </script>
 
