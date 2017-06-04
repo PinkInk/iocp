@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
         <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="/iocp/index.js"></script>
         <style>
             .tablet {
                 height: 150px;
@@ -20,16 +21,19 @@
 
         <!-- header -->
         <div class="w3-container w3-dark-grey w3-top">
-            <p class="w3-half w3-left-align">the Internet Of Chilli Peppers</p>
+            <p class="w3-half w3-left-align">
+                Node: <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
+            </p>
+            <p class="w3-half w3-right-align">the Internet Of Chilli Peppers</p>
         </div>
 
 
         <div class="w3-main" style="margin-top:60px;">
 
-            <!-- live view -->
+            <!-- most recent datapoint -->
             <div class="w3-container">
 
-                <!-- timestamps -->
+                <!-- timestamp -->
                 <div class="w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black">
                     <div class="w3-display-container tablet">
                         <div class="w3-display-topleft fa fa-clock-o w3-xxxlarge"></div>
@@ -45,7 +49,7 @@
                     </div>
                 </div>
 
-                <!-- datapoints -->
+                <!-- samples -->
                 <div ng-repeat="point in datapoints"
                     class="w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black"
                 >
@@ -58,211 +62,27 @@
 
             </div>
 
-            <!-- chart -->
             <div class="w3-container">
-                <!-- controls -->
+
+                <!-- chart controls -->
                 <div>
                     <i class="w3-xlarge fa fa-line-chart"></i>
-                    &nbsp;&nbsp;Node:
-                    <select ng-model="selectedNode" ng-options="node for node in nodes"></select>
                     &nbsp;&nbsp;Date:
                     <input name="decmonthsstart" type="button" ng-click="monthsadd(start, end, -1)" value="<<"/>
                     <input name="decdaysstart" type="button" ng-click="daysadd(start, end, -1)" value="<"/>
                     <input name="start" id="start" value="{{start | date : 'yyyy-MM-dd'}}" type="date"/>
                     <input name="incdaysstart" type="button" ng-click="daysadd(start, end, +1)" value=">"/>
                     <input name="incmonthsstart" type="button" ng-click="monthsadd(start, end, +1)" value=">>"/>
-                    &nbsp;&nbsp;
-                    <!--<i class="w3-xlarge fa fa fa-refresh" ng-click="linechartUpdate()"></i>-->
+                    <!--&nbsp;&nbsp;
+                    <i class="w3-xlarge fa fa fa-refresh" ng-click="linechartUpdate()"></i>-->
                 </div>
-                <!-- graphic -->
+
+                <!-- chart -->
                 <svg id="graph"></svg>
+
             </div>
 
         </div>
-
-        <script>
-
-var app = angular.module("app", []);
-
-app.controller("main", function($scope, $http, $interval) {
-
-    // most recent datapoint
-    updateLiveView = function() {
-        $http.get("/iocp/current")
-            .then(function(response) {
-                $scope.sample = response.data[0];
-                $scope.timestamp = new Date($scope.sample["timestamp"]);
-                $scope.datapoints = Object.keys($scope.sample).filter(
-                    function(k) {
-                        return !(k=="node"|k=="timestamp"|k=="_id");
-                    }
-                );
-            });
-    };
-
-    // time elapsed since most recent datapoint
-    updateTimeElapsed = function() {
-        $scope.timeelapsed = new Date(new Date() - $scope.timestamp);
-    };
-
-    $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
-    $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
-    $scope.daysadd = function(sdt, edt, i) {
-        sdt.setDate(sdt.getDate()+i);
-        edt.setDate(edt.getDate()+i);
-        linechartUpdate();
-    };
-    $scope.monthsadd = function(sdt, edt, i) {
-        sdt.setMonth(sdt.getMonth()+i);
-        edt.setMonth(edt.getMonth()+i);
-        linechartUpdate();
-    };
-
-
-    // draw lines and time axis
-    linechartUpdate = function() {
-        $http.get("/iocp/range?start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
-            .then(function(response) {
-
-            // clear chart content
-            chart.selectAll("*").remove();
-
-            data = response.data;
-
-            // x (time) scale
-            xscale = d3.scaleTime()
-                .domain([$scope.start, $scope.end])
-                .range([0, width]);
-
-            chart.append("g")
-                .call(d3.axisBottom(xscale))
-                .attr("transform", "translate(0," + (height) + ")");
-
-            svg.append("text")
-                .attr("x", (width+margin.left+margin.right)/2)
-                .attr("y", height+margin.top+margin.bottom)
-                .attr("text-anchor", "middle")
-                .text("Date Time");
-
-            // scale point fns
-            x = (d) => xscale(new Date(d.timestamp));
-            yt = (d) => ytscale(d.t);
-            yh = (d) => yhscale(d.h);
-            yl = (d) => ylscale(d.l);
-
-            // temperature
-            templine = d3.line()
-                .x( x )
-                .y( yt )
-                .curve(d3.curveBasis);
-
-            chart.append("path")
-                .datum(data)
-                .attr("d", templine)
-                .attr("style", $scope.types["t"].linestyle);
-
-            // humidity
-            humidityline = d3.line()
-                .x( x )
-                .y( yh )
-                .curve(d3.curveBasis);
-
-            chart.append("path")
-                .datum(data)
-                .attr("d", humidityline)
-                .attr("style", $scope.types["h"].linestyle);
-
-            // luminance
-            luminanceline = d3.line()
-                .x( x )
-                .y( yl )
-                .curve(d3.curveBasis);
-
-            chart.append("path")
-                .datum(data)
-                .attr("d", luminanceline)
-                .attr("style", $scope.types["l"].linestyle);
-
-        });
-    };
-
-    $http.get("/iocp/nodes")
-        .then(function(response) {
-            $scope.nodes = response.data;
-            $scope.selectedNode = $scope.nodes[0];
-            // TODO: return $http.get("/iocp/types?" + $scope.selectedNode)
-            return $http.get("/iocp/types")
-        })
-        .then(function(response) {
-            $scope.types = response.data;
-        })
-        .then(function() {
-            updateLiveView();
-            updateTimeElapsed();
-            $interval( updateLiveView, 60*1000)
-            $interval( updateTimeElapsed, 1000)
-
-            // chart setup
-            margin = {top: 10, right: 50, bottom: 50, left: 50};
-            width = 900 - margin.right - margin.left;
-            height = 400 - margin.top - margin.bottom;
-
-            svg = d3.select("#graph")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom);
-
-            chart = svg.append("g")
-                .attr("transform", "translate(" + margin.left + ", " + margin.top +")" )
-                .attr("width", width)
-                .attr("height", height);
-
-            // y scales
-            ytscale = d3.scaleLinear()
-                .domain([20, 80])
-                .range([height, 0]); // invert y scale
-
-            yhscale = d3.scaleLinear()
-                .domain([0, 100])
-                .range([height, 0]); // invert y scale
-
-            ylscale = d3.scaleLinear()
-                .domain([0, 65535])
-                .range([height, 0]);
-
-            // temp axis & label
-            svg.append("g")
-                .call(d3.axisLeft(ytscale))
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            svg.append("text")
-                .attr("transform", "rotate(-90)")
-                // coord system reversed due rotation
-                .attr("x", -height/2)
-                .attr("y", 0)
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("Temperature (" + $scope.types["t"].unit + ")");
-
-            // luminance axis & label
-            svg.append("g")
-                .call(d3.axisRight(yhscale))
-                .attr("transform", "translate(" + (width + margin.right) + "," + margin.top + ")");
-
-            svg.append("text")
-                .attr("transform", "rotate(-90)")
-                // coord system reversed due rotation
-                .attr("x", 0-(height/2))
-                .attr("y", width+margin.left+margin.right)
-                .attr("dy", "-1em")
-                .style("text-anchor", "middle")
-                .text("Humidity (" + $scope.types["h"].unit+ ")");
-
-            linechartUpdate();
-        });
-
-});
-
-        </script>
 
     </body>
 
