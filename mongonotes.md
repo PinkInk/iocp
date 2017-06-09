@@ -1,8 +1,11 @@
 # drop collection
+```javascript
 use <db>
 db.<collection>.drop()
+```
 
 # find
+```javascript
 use <db>
 db.<collection>.find() # find all
 db.<collection>.find().pretty() # prettify
@@ -19,16 +22,18 @@ db.<collection>.find(<query>)
     ]}
 db.<collection>.find(<query>).sort(<expr>)
     {"<field1>": 1(=asc), "<field2>": 0(=desc)}
-## find last record
+# find last record
 db.nodes.find().limit(1).sort({natural:-1})
 
 # unique / distinct records
 db.<collection>.distinct("<field>") # array of distinct values in the field
 db.<collection>.distinct("<field>")[0] # first distinct item
 db.<collection>.find().limit(1).sort({$natural:-1})
+```
 
 # aggregate
-## add a derived value
+```javascript
+# add a derived value
 db.nodes.aggregate(
     [
         { $project: {
@@ -102,3 +107,4 @@ db.nodes.aggregate(
         }
     ]
 )
+```
