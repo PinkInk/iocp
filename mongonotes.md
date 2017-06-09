@@ -22,6 +22,7 @@ db.<collection>.find(<query>)
     ]}
 db.<collection>.find(<query>).sort(<expr>)
     {"<field1>": 1(=asc), "<field2>": 0(=desc)}
+
 # find last record
 db.nodes.find().limit(1).sort({natural:-1})
 
