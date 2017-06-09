@@ -22,8 +22,10 @@ app.controller("main", function($scope, $http, $interval) {
     };
 
     // chart range
-    $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
-    $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
+    // $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
+    // $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
+    $scope.start = new Date(new Date().setHours(0,0,0,0));
+    $scope.end = new Date(new Date().setHours(23,59,59,999));
 
     // chart range button handlers
     $scope.daysadd = function(sdt, edt, i) {
