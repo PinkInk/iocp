@@ -2,6 +2,31 @@ var app = angular.module("app", []);
 
 app.controller("main", function($scope, $http, $interval) {
 
+    $scope.start = new Date(new Date().setHours(0,0,0,0));
+    $scope.end = new Date(new Date().setHours(23,59,59,999));
+    width = 600;
+    height = 600;
+    radius = Math.min(width,height)/2;
+    margin = {left:50, right:50, top:50, bottom:50 }
+    hours = d3.timeHours($scope.start, $scope.end, 1);
+    // radial scales
+    radii = {};
+    radii["r"] = d3.scaleLinear()
+                    .domain([0, 1])
+                    .range([radius/2, radius]);
+
+    // range button handlers
+    $scope.daysadd = function(sdt, edt, i) {
+        sdt.setDate(sdt.getDate()+i);
+        edt.setDate(edt.getDate()+i);
+        $scope.radialchartUpdate();
+    };
+    $scope.monthsadd = function(sdt, edt, i) {
+        sdt.setMonth(sdt.getMonth()+i);
+        edt.setMonth(edt.getMonth()+i);
+        $scope.radialchartUpdate();
+    };
+
     // update most recent datapoint
     updateLiveView = function() {
         $http.get("/iocp/current?node="+ $scope.selectedNode)
@@ -15,163 +40,141 @@ app.controller("main", function($scope, $http, $interval) {
                 );
             });
     };
-
-    // update time elapsed since most recent datapoint
+    // time elapsed since most recent datapoint
     updateTimeElapsed = function() {
-        $scope.timeelapsed = new Date(new Date() - $scope.timestamp);
+        dt = new Date(new Date() - $scope.timestamp);
+        dt /= 1000; // strip ms
+        $scope.dSeconds = Math.round(dt%60);
+        dt = Math.floor(dt/60); // stip s
+        $scope.dMinutes = Math.round(dt%60);
+        dt = Math.floor(dt/60); // stip m
+        $scope.dHours = Math.round(dt/24);
+        dt = Math.floor(dt/24);
+        $scope.dDays = dt;
     };
 
-    // chart range
-    // $scope.start = new Date(new Date().setUTCHours(0,0,0,0));
-    // $scope.end = new Date(new Date().setUTCHours(23,59,59,999));
-    $scope.start = new Date(new Date().setHours(0,0,0,0));
-    $scope.end = new Date(new Date().setHours(23,59,59,999));
+    // chart setup
+    canvas = d3.select("#graph")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    chart = canvas.append("g")
+            // translate & rotate coordinate space
+            .attr(
+                "transform", "translate("
+                + ((width / 2) + margin.left) + ","
+                + ((height / 2) + margin.top) + ")"
+                + " rotate(180)"
+            );
 
-    // chart range button handlers
-    $scope.daysadd = function(sdt, edt, i) {
-        sdt.setDate(sdt.getDate()+i);
-        edt.setDate(edt.getDate()+i);
-        linechartUpdate();
+    // radial axis
+    gr = chart.append("g")
+        .selectAll("g")
+            .data(radii.r.ticks(10))
+            .enter().append("g")
+    gr.append("circle")
+        .attr("r", radii.r)
+        .attr("style", "fill:none; stroke:grey; stroke-dasharray:1,2;");
+
+    // angular scale
+    a = d3.scaleLinear()
+        .domain([$scope.start, $scope.end])
+        .range([0, Math.PI*2])
+
+    // angular axis
+    // TODO: only works for 0-24 constraint
+    ga = chart.append("g")
+        .selectAll("g")
+            .data(hours.map( (d) => a(d)*(180/Math.PI) ))
+            .enter().append("g")
+                .attr("transform", (d) => "rotate(" + (d - 90) + ")" )
+    ga.append("line")
+        .attr("x1", radius/2)
+        .attr("x2", radius)
+        .attr("style", "stroke:black");
+    ga.append("text")
+        .attr("x", radius + 6)
+        .attr("dy", ".35em")
+        .text ( (d,i) => hours[i].toLocaleTimeString().substr(0,8) )
+            .attr("style", "font: 10px sans-serif")
+
+    // line & area functions
+    line = function(type) {
+        return d3.radialLine()
+            .radius( (d) => radii[type](d[type]) )
+            .angle( (d) => a(new Date(d.timestamp)) )
+            .curve(d3.curveBasis);
     };
-    $scope.monthsadd = function(sdt, edt, i) {
-        sdt.setMonth(sdt.getMonth()+i);
-        edt.setMonth(edt.getMonth()+i);
-        linechartUpdate();
+    area = function(type) {
+        return d3.radialArea()
+            .innerRadius(radius/2)
+            .outerRadius( (d) => radii[type](d[type]) )
+            .angle( (d) => a(new Date(d.timestamp)) )
+            .curve(d3.curveBasis);
     };
 
-    // update chart content - lines and time axis
-    linechartUpdate = function() {
-        $http.get("/iocp/range?node="+ $scope.selectedNode + "&start=" + $scope.start.toISOString() + "&end=" + $scope.end.toISOString())
-            .then(function(response) {
-
-            data = response.data;
-
-            // clear chart content
-            chart.selectAll("*").remove();
-
-            // update x (time) scale
-            xscale = d3.scaleTime()
-                .domain([$scope.start, $scope.end])
-                .range([0, width]);
-            chart.append("g")
-                .call(d3.axisBottom(xscale))
-                .attr("transform", "translate(0," + (height) + ")");
-
-            // draw lines
-            // temperature -->
-            chart.append("path")
-                .datum(data)
-                .attr("d", templine)
-                .attr("style", $scope.types["t"].linestyle);
-            // humidity -->
-            chart.append("path")
-                .datum(data)
-                .attr("d", humidityline)
-                .attr("style", $scope.types["h"].linestyle);
-            // luminance -->
-            chart.append("path")
-                .datum(data)
-                .attr("d", luminanceline)
-                .attr("style", $scope.types["l"].linestyle);
-
-        });
-    };
-
-    // MAIN
-    $http.get("/iocp/nodes")
+    $http.get("iocp/nodes")
         .then(function(response) {
+
             $scope.nodes = response.data;
             $scope.selectedNode = $scope.nodes[0];
-            // TODO: return $http.get("/iocp/types?" + $scope.selectedNode)
-            return $http.get("/iocp/types")
-        })
-        .then(function(response) {
-            $scope.types = response.data;
-        })
-        .then(function() {
+
+            return $http.get("iocp/types");
+
+        }).then(function(response) {
+
+            types = response.data;
+            $scope.types = types;
+
+            // update most recent datapoint badges
             updateLiveView();
             updateTimeElapsed();
-            $interval( updateLiveView, 60*1000)
-            $interval( updateTimeElapsed, 1000)
+            $interval( updateLiveView, 60*1000);
+            $interval( updateTimeElapsed, 1000);
 
-            // chart setup
-            margin = {top: 10, right: 50, bottom: 50, left: 50};
-            width = 900 - margin.right - margin.left;
-            height = 400 - margin.top - margin.bottom;
+            // radial scales for types
+            for (k in types) {
+                if (k!="node" & k!="timestamp" & k!="_id") {
+                    radii[k] = d3.scaleLinear()
+                        .domain(types[k].scale)
+                        .range([radius/2, radius])
+                };
+            };
+            // TODO: radial axis labelling per datapoint type
 
-            svg = d3.select("#graph")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom);
+            // line and area fns for types
+            lines={}, areas={};
+            for (k in types) {
+                if (k!="node" & k!="timestamp" & k!="_id") {
 
-            chart = svg.append("g")
-                .attr("transform", "translate(" + margin.left + ", " + margin.top +")" )
-                .attr("width", width)
-                .attr("height", height);
+                    lines[k] = chart.append("path")
+                        .attr("style", types[k].areastyle);
 
-            // y scales
-            ytscale = d3.scaleLinear()
-                .domain([20, 80])
-                .range([height, 0]); // invert y scale
-            yhscale = d3.scaleLinear()
-                .domain([0, 100])
-                .range([height, 0]); // invert y scale
-            ylscale = d3.scaleLinear()
-                .domain([0, 65535])
-                .range([height, 0]);
+                    areas[k] = chart.append("path")
+                        .attr("style", types[k].linestyle);
 
-            // axis & labels
-            // temperature ->
-            svg.append("g")
-                .call(d3.axisLeft(ytscale))
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-            svg.append("text")
-                .attr("transform", "rotate(-90)") // coord system reversed due rotation
-                .attr("x", -height/2)
-                .attr("y", 0)
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("Temperature (" + $scope.types["t"].unit + ")");
-            // luminance -->
-            svg.append("g")
-                .call(d3.axisRight(yhscale))
-                .attr("transform", "translate(" + (width + margin.right) + "," + margin.top + ")");
-            svg.append("text")
-                .attr("transform", "rotate(-90)") // coord system reversed due rotation
-                .attr("x", 0-(height/2))
-                .attr("y", width+margin.left+margin.right)
-                .attr("dy", "-1em")
-                .style("text-anchor", "middle")
-                .text("Humidity (" + $scope.types["h"].unit+ ")");
+                };
+            };
 
-            // time axis label
-            svg.append("text")
-                .attr("x", (width+margin.left+margin.right)/2)
-                .attr("y", height+margin.top+margin.bottom)
-                .attr("text-anchor", "middle")
-                .text("Date Time");
+            $scope.radialchartUpdate = function() {
+                $http.get(
+                        "/iocp/range?node="
+                        + $scope.selectedNode
+                        + "&start=" + $scope.start.toString()
+                        + "&end=" + $scope.end.toString()
+                    ).then(function(response) {
+                        data = response.data;
+                        for (k in types) {
+                            lines[k].datum(data)
+                                // applying when data.length==0
+                                // clears previous chart
+                                .attr("d", area(k));
+                            areas[k].datum(data)
+                                .attr("d", line(k))
+                        };
+                });
+            };
+            $scope.radialchartUpdate();
 
-            // scale point fns
-            x = (d) => xscale(new Date(d.timestamp));
-            yt = (d) => ytscale(d.t);
-            yh = (d) => yhscale(d.h);
-            yl = (d) => ylscale(d.l);
+      });
 
-            // line functions
-            templine = d3.line()
-                .x( x )
-                .y( yt )
-                .curve(d3.curveBasis);
-            humidityline = d3.line()
-                .x( x )
-                .y( yh )
-                .curve(d3.curveBasis);
-            luminanceline = d3.line()
-                .x( x )
-                .y( yl )
-                .curve(d3.curveBasis);
-
-            // draw initial (today's) chart
-            linechartUpdate();
-        });
-
-});
+})
