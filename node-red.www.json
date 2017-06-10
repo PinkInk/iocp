@@ -96,7 +96,7 @@
         "fieldType": "msg",
         "format": "html",
         "syntax": "plain",
-        "template": "<!DOCTYPE html>\n<html>\n    <head>\n        <title>iocp</title>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">\n        <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n        <script src=\"https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js\"></script>\n        <script src=\"https://d3js.org/d3.v4.min.js\"></script>\n        <script src=\"/iocp/index.js\"></script>\n        <style>\n            .tablet {\n                height: 150px;\n                width: 150px;\n            }\n        </style>\n    </head>\n\n    <body ng-app=\"app\" ng-controller=\"main\" class=\"w3-light-grey\">\n\n        <!-- header -->\n        <div class=\"w3-container w3-dark-grey w3-top\">\n            <p class=\"w3-half w3-left-align\">\n                Node: <select ng-model=\"selectedNode\" ng-options=\"node for node in nodes\"></select>\n            </p>\n            <p class=\"w3-half w3-right-align\">the Internet Of Chilli Peppers</p>\n        </div>\n\n\n        <div class=\"w3-main\" style=\"margin-top:60px;\">\n\n            <!-- most recent datapoint -->\n            <div class=\"w3-container\">\n\n                <!-- timestamp -->\n                <div ng-cloak class=\"w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black\">\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa fa-clock-o w3-xxxlarge\"></div>\n                        <div class=\"w3-display-topright w3-right-align\">\n                            <span class=\"w3-small\" ng-bind=\"timestamp | date\"></span><br/>\n                            <span class=\"w3-large\" ng-bind=\"timestamp | date : 'HH:MM'\"></span><br/>\n                            <i class=\"w3-small\">Last seen:</i><br/>\n                            <i class=\"w3-small\">{{dDays}} days {{(\"00\"+dHours).slice(-2)}}:{{(\"00\"+dMinutes).slice(-2)}}:{{(\"00\"+dSeconds).slice(-2)}}</i>\n                        </div>\n                        <div class=\"w3-display-bottomleft\"><h3>time</h3></div>\n                    </div>\n                </div>\n\n                <!-- samples -->\n                <div ng-repeat=\"point in datapoints\"\n                    class=\"w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black\"\n                >\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa {{types[point].icon}} w3-xxlarge\"></div>\n                        <div class=\"w3-display-topright\"><h3>\n                            {{sample[point] | number:1}}{{types[point].unit}}\n                        </h3></div>\n                        <div class=\"w3-display-bottomleft\"><h3>\n                            {{types[point].title}}\n                        </h3></div>\n                    </div>\n                </div>\n\n            </div>\n\n            <div class=\"w3-container\">\n\n                <!-- chart controls -->\n                <div>\n                    <i class=\"w3-xlarge fa fa-line-chart\"></i>\n                    &nbsp;&nbsp;Date:\n                    <input name=\"decmonthsstart\" type=\"button\" ng-click=\"monthsadd(start, end, -1)\" value=\"<<\"/>\n                    <input name=\"decdaysstart\" type=\"button\" ng-click=\"daysadd(start, end, -1)\" value=\"<\"/>\n                    <input name=\"start\" id=\"start\" value=\"{{start | date : 'yyyy-MM-dd'}}\" type=\"date\"/>\n                    <input name=\"incdaysstart\" type=\"button\" ng-click=\"daysadd(start, end, +1)\" value=\">\"/>\n                    <input name=\"incmonthsstart\" type=\"button\" ng-click=\"monthsadd(start, end, +1)\" value=\">>\"/>\n                    &nbsp;&nbsp;\n                    <!--<input name=\"refresh\" type=\"button\" ng-click=\"radialChartUpdate()\" value=\"+\"/>-->\n                </div>\n\n                <!-- chart -->\n                <svg id=\"graph\"></svg>\n\n            </div>\n\n        </div>\n\n    </body>\n\n</html>\n",
+        "template": "<!DOCTYPE html>\n<html>\n    <head>\n        <title>iocp</title>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">\n        <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css\">\n        <script src=\"https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js\"></script>\n        <script src=\"https://d3js.org/d3.v4.min.js\"></script>\n        <script src=\"/iocp/index.js\"></script>\n        <style>\n            .tablet {\n                height: 150px;\n                width: 150px;\n            }\n        </style>\n    </head>\n\n    <body ng-app=\"app\" ng-controller=\"main\" class=\"w3-light-grey\">\n\n        <!-- header -->\n        <div class=\"w3-container w3-dark-grey w3-top\">\n            <p class=\"w3-half w3-left-align\">\n                Node: <select ng-model=\"selectedNode\" ng-options=\"node for node in nodes\"></select>\n            </p>\n            <p class=\"w3-half w3-right-align\">the Internet Of Chilli Peppers</p>\n        </div>\n\n\n        <div class=\"w3-main\" style=\"margin-top:60px;\">\n\n            <!-- most recent datapoint -->\n            <div class=\"w3-container\">\n\n                <!-- timestamp -->\n                <div ng-cloak class=\"w3-tag w3-margin w3-grey w3-padding-large w3-bottombar w3-border-black\">\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa fa-clock-o w3-xxlarge\"></div>\n                        <div class=\"w3-display-topright w3-right-align\">\n                            <span class=\"w3-small\" ng-bind=\"timestamp | date\"></span><br/>\n                            <span class=\"w3-large\" ng-bind=\"timestamp | date : 'HH:MM'\"></span><br/>\n                            <i class=\"w3-small\">Last seen:</i><br/>\n                            <i class=\"w3-small\">{{dDays}} days {{(\"00\"+dHours).slice(-2)}}:{{(\"00\"+dMinutes).slice(-2)}}:{{(\"00\"+dSeconds).slice(-2)}}</i>\n                        </div>\n                        <div class=\"w3-display-bottomleft\"><h3>timestamp</h3></div>\n                    </div>\n                </div>\n\n                <!-- samples -->\n                <div ng-repeat=\"point in datapoints\"\n                    class=\"w3-tag w3-margin {{types[point].color}} w3-padding-large w3-bottombar w3-border-black\"\n                >\n                    <div class=\"w3-display-container tablet\">\n                        <div class=\"w3-display-topleft fa {{types[point].icon}} w3-xxlarge\"></div>\n                        <div class=\"w3-display-topright\"><h3>\n                            {{sample[point] | number:1}}{{types[point].unit}}\n                        </h3></div>\n                        <div class=\"w3-display-bottomleft\"><h3>\n                            {{types[point].title}}\n                        </h3></div>\n                    </div>\n                </div>\n\n            </div>\n\n            <div class=\"w3-container\">\n\n                <!-- chart controls -->\n                <div>\n                    <i class=\"w3-xlarge fa fa-line-chart\"></i>\n                    &nbsp;&nbsp;Date:\n                    <input name=\"decmonthsstart\" type=\"button\" ng-click=\"monthsadd(start, end, -1)\" value=\"<<\"/>\n                    <input name=\"decdaysstart\" type=\"button\" ng-click=\"daysadd(start, end, -1)\" value=\"<\"/>\n                    <input name=\"start\" id=\"start\" value=\"{{start | date : 'yyyy-MM-dd'}}\" type=\"date\"/>\n                    <input name=\"incdaysstart\" type=\"button\" ng-click=\"daysadd(start, end, +1)\" value=\">\"/>\n                    <input name=\"incmonthsstart\" type=\"button\" ng-click=\"monthsadd(start, end, +1)\" value=\">>\"/>\n                    &nbsp;&nbsp;\n                    <!--<input name=\"refresh\" type=\"button\" ng-click=\"radialChartUpdate()\" value=\"+\"/>-->\n                </div>\n\n                <!-- chart -->\n                <svg id=\"graph\"></svg>\n\n            </div>\n\n        </div>\n\n    </body>\n\n</html>\n",
         "x": 290,
         "y": 120,
         "wires": [
@@ -562,6 +562,92 @@
         "x": 470,
         "y": 420,
         "wires": []
+    },
+    {
+        "id": "244d0027.c0d32",
+        "type": "comment",
+        "z": "df0246a4.5a7b18",
+        "name": "month summary",
+        "info": "",
+        "x": 120,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "30ab8fa9.7b39e",
+        "type": "http in",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "url": "/iocp/summary",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 330,
+        "y": 800,
+        "wires": [
+            [
+                "65f98f3d.4bdea"
+            ]
+        ]
+    },
+    {
+        "id": "6f593cc0.f42674",
+        "type": "http response",
+        "z": "df0246a4.5a7b18",
+        "name": "",
+        "x": 990,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "65f98f3d.4bdea",
+        "type": "function",
+        "z": "df0246a4.5a7b18",
+        "name": "build_query",
+        "func": "// query string\nmsg.payload =\n[\n    { $project: {\n        node: true, \n        h: true, \n        t: true, \n        l: true, \n        timestamp: true, \n        _id: true,\n        hour: { $hour: \"$timestamp\"},\n        month: { $month: \"$timestamp\"},\n        year: { $year: \"$timestamp\"}\n    }},\n    { $match: { \n        node: msg.payload.node,\n        month: parseInt(msg.payload.month), \n        year: parseInt(msg.payload.year) \n        } \n    },\n    { $group: {\n            _id: {\n               hour:{$hour:\"$timestamp\"},\n               day:{$dayOfMonth: \"$timestamp\"},\n                month:{$month:\"$timestamp\"},\n                year:{$year:\"$timestamp\"}\n            },\n            averageTemp: { $avg: \"$t\" },\n            averageHumidity: { $avg: \"$h\"},\n            averageLuminance: { $avg: \"$l\"},\n            count: { $sum: 1 }\n        }\n    },\n    {\n        $sort: {\n            \"_id.year\": 1, \n            \"_id.month\": 1, \n            \"_id.day\": 1, \n            \"_id.hour\":1 \n            \n        }\n    }\n];\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 510,
+        "y": 800,
+        "wires": [
+            [
+                "56f6cbf0.765e34"
+            ]
+        ]
+    },
+    {
+        "id": "56f6cbf0.765e34",
+        "type": "mongodb in",
+        "z": "df0246a4.5a7b18",
+        "mongodb": "2fa38bb1.9762c4",
+        "name": "aggr: nodes",
+        "collection": "nodes",
+        "operation": "aggregate",
+        "x": 690,
+        "y": 800,
+        "wires": [
+            [
+                "c867f617.be86e8"
+            ]
+        ]
+    },
+    {
+        "id": "c867f617.be86e8",
+        "type": "change",
+        "z": "df0246a4.5a7b18",
+        "name": "clean",
+        "rules": [],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 850,
+        "y": 800,
+        "wires": [
+            [
+                "6f593cc0.f42674"
+            ]
+        ]
     },
     {
         "id": "2fa38bb1.9762c4",
