@@ -141,7 +141,6 @@ db.nodes.aggregate(
                     year:{$year:"$timestamp"}
                 },
                 averageTemp: { $avg: "$t" },
-                averageTemp: { $avg: "$t" },
                 averageHumidity: { $avg: "$h"},
                 averageLuminance: { $avg: "$l"},
                 count: { $sum: 1 }
@@ -152,7 +151,6 @@ db.nodes.aggregate(
         }
     ]
 )
-
 
 # create array of matching doc values
 db.nodes.aggregate(
