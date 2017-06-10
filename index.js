@@ -141,6 +141,13 @@ app.controller("main", function($scope, $http, $interval) {
             };
             // TODO: radial axis labelling per datapoint type
 
+            // current date
+            $scope.date = chart.append("text")
+                .text($scope.start.toDateString())
+                .attr("style", "font: 20px sans-serif; text-anchor:middle;")
+                // the coord space is inverted
+                .attr("transform", "rotate(180)")
+
             // line and area fns for types
             lines={}, areas={};
             for (k in types) {
@@ -162,6 +169,7 @@ app.controller("main", function($scope, $http, $interval) {
                         + "&start=" + $scope.start.toString()
                         + "&end=" + $scope.end.toString()
                     ).then(function(response) {
+                        $scope.date.text($scope.start.toDateString())
                         data = response.data;
                         for (k in types) {
                             lines[k].datum(data)
@@ -174,7 +182,7 @@ app.controller("main", function($scope, $http, $interval) {
                 });
             };
             $scope.radialchartUpdate();
-            $interval( radialchartUpdate, 60*1000);
+            $interval(radialchartUpdate, 60*1000);
 
       });
 
