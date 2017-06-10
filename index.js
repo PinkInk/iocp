@@ -174,6 +174,7 @@ app.controller("main", function($scope, $http, $interval) {
                 });
             };
             $scope.radialchartUpdate();
+            $interval( radialchartUpdate, 60*1000);
 
       });
 
