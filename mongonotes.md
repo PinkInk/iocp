@@ -32,6 +32,13 @@ db.<collection>.distinct("<field>")[0] # first distinct item
 db.<collection>.find().limit(1).sort({$natural:-1})
 ```
 
+# create index
+```javascript
+db.<collection>.createIndex({<field1>:1, [<field2>:1, <field3>:1]})
+db.nodes.createIndex({timestamp:1})
+db.nodes.createIndex({timestamp:1, node:1})
+```
+
 # aggregate
 ```javascript
 # add a derived value
@@ -74,7 +81,7 @@ db.nodes.aggregate(
     ]
 )
 
-# sumarise by id value
+# sumarise by id value, midday daily
 db.nodes.aggregate(
     [
         { $project: {
@@ -83,7 +90,8 @@ db.nodes.aggregate(
         }},
         { $match: { hour: 12 } },
         { $group: {
-                _id: { day:{$dayOfMonth: "$timestamp"}, month:{$month:"$timestamp"}, year:{$year:"$timestamp"}},                averageTemp: { $avg: "$t" },
+                _id: { day:{$dayOfMonth: "$timestamp"}, month:{$month:"$timestamp"}, year:{$year:"$timestamp"}},
+                averageTemp: { $avg: "$t" },
                 averageTemp: { $avg: "$t" },
                 averageHumidity: { $avg: "$h"},
                 averageLuminance: { $avg: "$l"},
@@ -92,6 +100,59 @@ db.nodes.aggregate(
         }
     ]
 )
+
+# sumarise by id value, every hour of every day
+db.nodes.aggregate(
+    [
+        { $project: {
+            node: true, h: true, t: true, l: true, timestamp: true, _id: true,
+            hour: { $hour: "$timestamp"},
+        }},
+        { $group: {
+                _id: { hour:{$hour:"$timestamp"}, day:{$dayOfMonth: "$timestamp"}, month:{$month:"$timestamp"}, year:{$year:"$timestamp"}},
+                averageTemp: { $avg: "$t" },
+                averageTemp: { $avg: "$t" },
+                averageHumidity: { $avg: "$h"},
+                averageLuminance: { $avg: "$l"},
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: {"_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour":1 }
+        }
+    ]
+)
+
+# sumarise by id value, every hour of every day for particular year/month
+db.nodes.aggregate(
+    [
+        { $project: {
+            node: true, h: true, t: true, l: true, timestamp: true, _id: true,
+            hour: { $hour: "$timestamp"},
+            month: { $month: "$timestamp"},
+            year: { $year: "$timestamp"}
+        }},
+        { $match: { month: 6, year: 2017 } },
+        { $group: {
+                _id: {
+                   hour:{$hour:"$timestamp"},
+                   day:{$dayOfMonth: "$timestamp"},
+                    month:{$month:"$timestamp"},
+                    year:{$year:"$timestamp"}
+                },
+                averageTemp: { $avg: "$t" },
+                averageTemp: { $avg: "$t" },
+                averageHumidity: { $avg: "$h"},
+                averageLuminance: { $avg: "$l"},
+                count: { $sum: 1 }
+            }
+        },
+        {
+            $sort: {"_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour":1 }
+        }
+    ]
+)
+
 
 # create array of matching doc values
 db.nodes.aggregate(
