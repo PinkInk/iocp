@@ -112,12 +112,14 @@ app.controller("main", function($scope, $http, $interval) {
             .curve(d3.curveBasis);
     };
 
+    // available nodes in db
     $http.get("iocp/nodes")
         .then(function(response) {
 
             $scope.nodes = response.data;
             $scope.selectedNode = $scope.nodes[0];
 
+            // datapoint types
             return $http.get("iocp/types");
 
         }).then(function(response) {
@@ -137,9 +139,33 @@ app.controller("main", function($scope, $http, $interval) {
                     radii[k] = d3.scaleLinear()
                         .domain(types[k].scale)
                         .range([radius/2, radius])
-                };
-            };
-            // TODO: radial axis labelling per datapoint type
+                }
+            }
+
+            // angular axis
+            ang = 90;
+            for (k in types) {
+
+                gr = chart.append("g")
+                    .attr("transform", "rotate(" + ang + ")")
+
+                gr.selectAll("g")
+                    .data(radii[k].ticks(10))
+                    .enter().append("g")
+                        .append("text")
+                            .attr("y", (d) => -radii[k](d) - 4 )
+                            .attr("transform", "rotate(90) translate(5,0)")
+                            .attr("style", "font: 10px sans-serif")
+                            .text( (d) => d.toFixed(0) );
+
+                gr.append("line")
+                    .attr("x1", radius/2)
+                    .attr("x2", radius)
+                    .attr("style", types[k].linestyle);
+
+                ang += 360/24;
+
+            }
 
             // current date
             $scope.date = chart.append("text")
@@ -159,9 +185,10 @@ app.controller("main", function($scope, $http, $interval) {
                     areas[k] = chart.append("path")
                         .attr("style", types[k].linestyle);
 
-                };
-            };
+                }
+            }
 
+            // generate plots
             $scope.radialchartUpdate = function() {
                 $http.get(
                         "/iocp/range?node="
@@ -178,12 +205,12 @@ app.controller("main", function($scope, $http, $interval) {
                                 .attr("d", area(k));
                             areas[k].datum(data)
                                 .attr("d", line(k))
-                        };
-                });
-            };
+                        }
+                })
+            }
             $scope.radialchartUpdate();
-            $interval(radialchartUpdate, 60*1000);
+            $interval($scope.radialchartUpdate, 60*1000);
 
-      });
+      })
 
 })
