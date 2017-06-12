@@ -1,0 +1,36 @@
+Bluemix
+    Trial:
+    https://idaas.iam.ibm.com/idaas/mtfim/sps/authsvc?PolicyId=urn:ibm:security:authentication:asf:basicldapuser
+    tim.pelling@carillionmena.com / Uncharted23
+    00971506259326
+    Organisation: carillionmena_trial
+    Spaces:
+        dev
+
+console: https://console.ng.bluemix.net/
+login.ng.bluemix.net
+
+Application:
+    API Key:    a-8e4usp-b4ebicnle6
+    Auth Token: v6?_JXEOi5Dp3HhnNM
+
+organisation ID: 8e4usp
+MQTT addr:  orgId.messaging.internetofthings.ibmcloud.com  
+            8e4usp.messaging.internetofthings.ibmcloud.com
+            
+
+Connection ports:
+    MQTT insecure:  1883
+    MQTT secure:    8883
+    HTTP secure:    443    
+
+Device:
+    Type: micropython
+    ID: ESP_E11D8B
+    Unique s/n (MAC): 18:fe:34:e1:1d:8b
+    Auth method: token
+    Auth token: maSU@k0xAv4qnF@gFz
+
+    MQTT Client Identifier:
+        d:orgId:deviceType:deviceId
+        d:8e4usp:micropython:ESP_E11D8B
