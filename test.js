@@ -7,7 +7,6 @@ app.controller("main", function($scope, $http, $interval) {
     year = 2017;
     start = new Date(year, month-1, 1, 0, 0, 0, 0)
     end = new Date(new Date(year, month, 1, 0, 0, 0, 0)-1)
-    datapoints = ["averageTemp", "averageHumidity"];
 
     width = 900;
     height = 50;
@@ -19,8 +18,6 @@ app.controller("main", function($scope, $http, $interval) {
     chart = canvas.append("g")
             .attr(
                 "transform", "translate("
-                // + ((width / 2) + margin.left) + ","
-                // + ((height / 2) + margin.top) + ")"
                 + margin.left + ","
                 + margin.top + ")"
             );
@@ -29,9 +26,7 @@ app.controller("main", function($scope, $http, $interval) {
         .domain([start, end])
         .range([0, width]);
 
-    // only appropriate for t & h
     y = d3.scaleLinear()
-        .domain([0, 100])
         .range([height, 0])
 
     canvas.append("g")
@@ -49,24 +44,34 @@ app.controller("main", function($scope, $http, $interval) {
             .curve(d3.curveBasis);
     };
 
-    $http.get(
-        "iocp/summary"
-        + "?node=" + node
-        + "&year=" + year
-        + "&month=" + month
-    ).then(function(response){
+    $http.get("iocp/types")
+        .then (function(response) {
 
-        data = response.data;
+            types = response.data;
 
-        for (k in datapoints) {
+            return $http.get(
+                "iocp/summary"
+                + "?node=" + node
+                + "&year=" + year
+                + "&month=" + month
+            );
 
-            chart.append("path")
-                .datum(data)
-                .attr("d", line(datapoints[k]))
-                .attr("style", "stroke:black; stroke-width:1; fill:none;");
+        }).then(function(response){
 
-        };
+            data = response.data;
 
-    });
+            for (k in types) {
+
+                // y scale to current type domain
+                y.domain(types[k].scale);
+
+                chart.append("path")
+                    .datum(data)
+                    .attr("d", line(k))
+                    .attr("style", types[k].linestyle)
+
+            };
+
+        });
 
 })
