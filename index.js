@@ -127,19 +127,11 @@ app.controller("main", function($scope, $http, $interval) {
             types = response.data;
             $scope.types = types;
 
-            // update most recent datapoint badges
-            // updateLiveView();
-            // updateTimeElapsed();
-            // $interval( updateLiveView, 60*1000);
-            // $interval( updateTimeElapsed, 1000);
-
             // radial scales for types
             for (k in types) {
-                if (k!="node" & k!="timestamp" & k!="_id") {
-                    radii[k] = d3.scaleLinear()
-                        .domain(types[k].scale)
-                        .range([radius/2, radius])
-                }
+                radii[k] = d3.scaleLinear()
+                    .domain(types[k].scale)
+                    .range([radius/2, radius])
             }
 
             // angular axis
