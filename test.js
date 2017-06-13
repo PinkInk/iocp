@@ -3,10 +3,11 @@ var app = angular.module("app", []);
 app.controller("main", function($scope, $http, $interval) {
 
     node = "esp8266:18:fe:34:e1:1d:8b";
-    month = 5;
+    month = 6;
     year = 2017;
     start = new Date(year, month-1, 1, 0, 0, 0, 0)
     end = new Date(new Date(year, month, 1, 0, 0, 0, 0)-1)
+    datapoints = ["averageTemp", "averageHumidity"];
 
     width = 900;
     height = 50;
@@ -18,8 +19,10 @@ app.controller("main", function($scope, $http, $interval) {
     chart = canvas.append("g")
             .attr(
                 "transform", "translate("
-                + ((width / 2) + margin.left) + ","
-                + ((height / 2) + margin.top) + ")"
+                // + ((width / 2) + margin.left) + ","
+                // + ((height / 2) + margin.top) + ")"
+                + margin.left + ","
+                + margin.top + ")"
             );
 
     x = d3.scaleTime()
@@ -29,7 +32,7 @@ app.controller("main", function($scope, $http, $interval) {
     // only appropriate for t & h
     y = d3.scaleLinear()
         .domain([0, 100])
-        .range([0, height])
+        .range([height, 0])
 
     canvas.append("g")
         .call(
@@ -55,12 +58,12 @@ app.controller("main", function($scope, $http, $interval) {
 
         data = response.data;
 
-        for (k in ["averageTemp", "averageHumidity"]) {
+        for (k in datapoints) {
 
             chart.append("path")
                 .datum(data)
-                .attr("d", line(k))
-                .attr("style", "stroke:black; stroke-width:1; fill:none");
+                .attr("d", line(datapoints[k]))
+                .attr("style", "stroke:black; stroke-width:1; fill:none;");
 
         };
 
