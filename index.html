@@ -39,7 +39,7 @@
                         <div class="w3-display-topleft fa fa-clock-o w3-xxlarge"></div>
                         <div class="w3-display-topright w3-right-align">
                             <span class="w3-small" ng-bind="timestamp | date"></span><br/>
-                            <span class="w3-large" ng-bind="timestamp | date : 'HH:MM'"></span><br/>
+                            <span class="w3-large" ng-bind="timestamp | date : 'hh:mm'"></span><br/>
                             <i class="w3-small">Last seen:</i><br/>
                             <i class="w3-small">{{dDays}} days {{("00"+dHours).slice(-2)}}:{{("00"+dMinutes).slice(-2)}}:{{("00"+dSeconds).slice(-2)}}</i>
                         </div>

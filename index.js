@@ -28,7 +28,7 @@ app.controller("main", function($scope, $http, $interval) {
     };
 
     // update most recent datapoint
-    updateLiveView = function() {
+    $scope.updateLiveView = function() {
         $http.get("/iocp/current?node="+ $scope.selectedNode)
             .then(function(response) {
                 $scope.sample = response.data[0];
@@ -41,7 +41,7 @@ app.controller("main", function($scope, $http, $interval) {
             });
     };
     // time elapsed since most recent datapoint
-    updateTimeElapsed = function() {
+    $scope.updateTimeElapsed = function() {
         dt = new Date(new Date() - $scope.timestamp);
         dt /= 1000; // strip ms
         $scope.dSeconds = Math.round(dt%60);
@@ -128,10 +128,10 @@ app.controller("main", function($scope, $http, $interval) {
             $scope.types = types;
 
             // update most recent datapoint badges
-            updateLiveView();
-            updateTimeElapsed();
-            $interval( updateLiveView, 60*1000);
-            $interval( updateTimeElapsed, 1000);
+            // updateLiveView();
+            // updateTimeElapsed();
+            // $interval( updateLiveView, 60*1000);
+            // $interval( updateTimeElapsed, 1000);
 
             // radial scales for types
             for (k in types) {
@@ -208,7 +208,13 @@ app.controller("main", function($scope, $http, $interval) {
                         }
                 })
             }
+
+            // update
+            $scope.updateLiveView();
+            $scope.updateTimeElapsed();
             $scope.radialchartUpdate();
+            $interval($scope.updateLiveView, 60*1000);
+            $interval($scope.updateTimeElapsed, 1000);
             $interval($scope.radialchartUpdate, 60*1000);
 
       })
