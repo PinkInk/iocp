@@ -39,10 +39,19 @@ app.controller("main", function($scope, $http, $interval) {
 
     line = function(datapoint) {
         return d3.line()
+            // skip plotting where no data
+            .defined( (d) => d )
             .x( (d) => x(new Date(d._id.year, d._id.month-1, d._id.day, d._id.hour,0,0,0)))
             .y( (d) => y(d[datapoint]))
             .curve(d3.curveBasis);
     };
+
+    viewport = d3.brushX()
+        .extent([[0,0], [width, height]])
+        .on("brush",
+            function() { console.log( viewport.extent()() ) }
+        );
+    chart.call(viewport)
 
     $http.get("iocp/types")
         .then (function(response) {
@@ -60,6 +69,16 @@ app.controller("main", function($scope, $http, $interval) {
 
             data = response.data;
 
+            // splice NaN's into gaps in dataset
+            // where delta _id > 1 hour
+            id2int = (_id) => (_id.day*24)+(_id.hour);
+            for (i=0 ; i<data.length-1 ; i++) {
+                if ( id2int(data[i+1]._id) - id2int(data[i]._id) > 1 ) {
+                    data.splice(i+1, 0, NaN)
+                    i += 1;
+                }
+            }
+
             for (k in types) {
 
                 // y scale to current type domain
@@ -73,5 +92,7 @@ app.controller("main", function($scope, $http, $interval) {
             };
 
         });
+
+
 
 })
