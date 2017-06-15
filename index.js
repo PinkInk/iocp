@@ -100,12 +100,14 @@ app.controller("main", function($scope, $http, $interval) {
     // line & area functions
     line = function(type) {
         return d3.radialLine()
+            .defined( (d) => d ) // skip NaN datapoints
             .radius( (d) => radii[type](d[type]) )
             .angle( (d) => a(new Date(d.timestamp)) )
             .curve(d3.curveBasis);
     };
     area = function(type) {
         return d3.radialArea()
+            .defined( (d) => d ) // skip NaN datapoints
             .innerRadius(radius/2)
             .outerRadius( (d) => radii[type](d[type]) )
             .angle( (d) => a(new Date(d.timestamp)) )
@@ -190,6 +192,15 @@ app.controller("main", function($scope, $http, $interval) {
                     ).then(function(response) {
                         $scope.date.text($scope.start.toDateString())
                         data = response.data;
+
+                        // splice NaN's into dataset
+                        // where no datapoints for > 15 minutes
+                        for (i=0 ; i<data.length-1 ; i++) {
+                            if (new Date(data[i+1].timestamp)-new Date(data[i].timestamp) > (1000*60*15)) {
+                                data.splice(i+1, 0, NaN);
+                            }
+                        }
+
                         for (k in types) {
                             lines[k].datum(data)
                                 // applying when data.length==0
