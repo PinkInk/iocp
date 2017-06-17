@@ -4,10 +4,10 @@ app.controller("main", function($scope, $http, $interval) {
 
     node = "esp8266:18:fe:34:e1:1d:8b";
 
-    today = d3.timeDay.floor(new Date());
-    start = d3.timeMonth.floor(today);
-    end = d3.timeSecond.offset(d3.timeMonth.offset(start, 1), -1);
-    monthdays = d3.timeDay.offset(end, -1).getDate();
+    $scope.today = d3.timeDay.floor(new Date());
+    $scope.start = d3.timeMonth.floor($scope.today);
+    $scope.end = d3.timeSecond.offset(d3.timeMonth.offset($scope.start, 1), -1);
+    monthdays = d3.timeDay.offset($scope.end, -1).getDate();
 
     width = 900;
     height = 50;
@@ -24,7 +24,7 @@ app.controller("main", function($scope, $http, $interval) {
             );
 
     x = d3.scaleTime()
-        .domain([start, end])
+        .domain([$scope.start, $scope.end])
         .range([0, width]);
 
     y = d3.scaleLinear()
@@ -64,11 +64,33 @@ app.controller("main", function($scope, $http, $interval) {
 
     viewport = chart.append("g")
         .attr("class", "viewport")
-        .call(brush)
-        .call(
-            brush.move,
-            [x(today), x(d3.timeDay.offset(today, 1))]
-        );
+        .call(brush);
+
+    updateViewport = function(){
+            viewport.call(
+                brush.move,
+                [x($scope.today), x(d3.timeDay.offset($scope.today, 1))]
+            )
+    };
+    updateViewport();
+
+    $scope.daysadd = function(i) {
+        month = $scope.today.getMonth();
+        $scope.today.setDate($scope.today.getDate()+i);
+        md = $scope.today.getMonth();
+        if (md != 0) {
+            $scope.monthsadd(md);
+        } else {
+            updateViewport();
+        }
+    };
+
+    $scope.monthsadd = function(i) {
+        $scope.start = d3.timeMonth.offset($scope.start, i);
+        $scope.end = d3.timeMonth.offset($scope.end, i);
+        $scope.updateMonthChart();
+        updateViewport();
+    };
 
     $http.get("iocp/types")
         .then (function(response) {
@@ -80,8 +102,8 @@ app.controller("main", function($scope, $http, $interval) {
                 $http.get(
                     "iocp/summary"
                     + "?node=" + node
-                    + "&year=" + start.getFullYear()
-                    + "&month=" + (start.getMonth()+1)
+                    + "&year=" + $scope.start.getFullYear()
+                    + "&month=" + ($scope.start.getMonth()+1)
                 ).then(function(response) {
 
                     data = response.data;

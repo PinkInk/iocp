@@ -19,8 +19,13 @@
 
     <body ng-app="app" ng-controller="main" class="w3-light-grey">
 
-        <svg id="summary"></svg>
-
+        <div class="w3-container">
+            <input name="decmonthsstart" type="button" ng-click="monthsadd(-1)" value="<<"/>
+            <input name="decdaysstart" type="button" ng-click="daysadd(-1)" value="<"/>
+            <svg id="summary"></svg>
+            <input name="incdaysstart" type="button" ng-click="daysadd(+1)" value=">"/>
+            <input name="incmonthsstart" type="button" ng-click="monthsadd(+1)" value=">>"/>
+        </div>
 
     </body>
 
