@@ -75,41 +75,39 @@ app.controller("main", function($scope, $http, $interval) {
 
             types = response.data;
 
-            return $http.get(
-                "iocp/summary"
-                + "?node=" + node
-                + "&year=" + start.getFullYear()
-                + "&month=" + (start.getMonth()+1)
-            );
+            $scope.updateMonthChart = function(){
 
-        }).then(function(response){
+                $http.get(
+                    "iocp/summary"
+                    + "?node=" + node
+                    + "&year=" + start.getFullYear()
+                    + "&month=" + (start.getMonth()+1)
+                ).then(function(response) {
 
-            data = response.data;
+                    data = response.data;
 
-            // splice NaN's into gaps in dataset
-            // where delta _id > 1 hour
-            id2int = (_id) => (_id.day*24)+(_id.hour);
-            for (i=0 ; i<data.length-1 ; i++) {
-                if ( id2int(data[i+1]._id) - id2int(data[i]._id) > 1 ) {
-                    data.splice(i+1, 0, NaN)
-                    i += 1;
-                }
+                    // splice NaN's into gaps in dataset
+                    // where delta _id > 1 hour
+                    id2int = (_id) => (_id.day*24)+(_id.hour);
+                    for (i=0 ; i<data.length-1 ; i++) {
+                        if ( id2int(data[i+1]._id) - id2int(data[i]._id) > 1 ) {
+                            data.splice(i+1, 0, NaN)
+                            i += 1;
+                        }
+                    };
+
+                    for (k in types) {
+                        y.domain(types[k].scale);
+                        chart.append("path")
+                            .datum(data)
+                            .attr("d", line(k))
+                            .attr("style", types[k].linestyle)
+                    };
+
+                })
             };
 
-            for (k in types) {
+            $scope.updateMonthChart();
 
-                // y scale to current type domain
-                y.domain(types[k].scale);
-
-                chart.append("path")
-                    .datum(data)
-                    .attr("d", line(k))
-                    .attr("style", types[k].linestyle)
-
-            };
-
-        });
-
-
-
+        })
 })
