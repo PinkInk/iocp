@@ -11,7 +11,7 @@ app.controller("main", function($scope, $http, $interval) {
 
     width = 900;
     height = 50;
-    margin = {left:15, right:15, top:15, bottom:30}
+    margin = {left:15, right:15, top:15, bottom:30};
 
     canvas = d3.select("#summary")
         .attr("width", width + margin.left + margin.right)
@@ -28,7 +28,7 @@ app.controller("main", function($scope, $http, $interval) {
         .range([0, width]);
 
     y = d3.scaleLinear()
-        .range([height, 0])
+        .range([height, 0]);
 
     canvas.append("g")
         .call(
@@ -47,7 +47,7 @@ app.controller("main", function($scope, $http, $interval) {
             .curve(d3.curveBasis);
     };
 
-    viewport = d3.brushX()
+    brush = d3.brushX()
         .extent([[0,0], [width, height]])
         .on("end",
             function(){
@@ -60,9 +60,15 @@ app.controller("main", function($scope, $http, $interval) {
                     .transition()
                         .call(d3.event.target.move, d.map(x))
             }
-        )
+        );
 
-    chart.call(viewport)
+    viewport = chart.append("g")
+        .attr("class", "viewport")
+        .call(brush)
+        .call(
+            brush.move,
+            [x(today), x(d3.timeDay.offset(today, 1))]
+        );
 
     $http.get("iocp/types")
         .then (function(response) {
@@ -88,7 +94,7 @@ app.controller("main", function($scope, $http, $interval) {
                     data.splice(i+1, 0, NaN)
                     i += 1;
                 }
-            }
+            };
 
             for (k in types) {
 
