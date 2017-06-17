@@ -3,10 +3,11 @@ var app = angular.module("app", []);
 app.controller("main", function($scope, $http, $interval) {
 
     node = "esp8266:18:fe:34:e1:1d:8b";
-    month = 6;
-    year = 2017;
-    start = new Date(year, month-1, 1, 0, 0, 0, 0)
-    end = new Date(new Date(year, month, 1, 0, 0, 0, 0)-1)
+
+    today = d3.timeDay.floor(new Date());
+    start = d3.timeMonth.floor(today);
+    end = d3.timeSecond.offset(d3.timeMonth.offset(start, 1), -1);
+    monthdays = d3.timeDay.offset(end, -1).getDate();
 
     width = 900;
     height = 50;
@@ -32,7 +33,7 @@ app.controller("main", function($scope, $http, $interval) {
     canvas.append("g")
         .call(
             d3.axisBottom(x)
-                .ticks(new Date(year,month,0).getDate())
+                .ticks(monthdays)
                 .tickFormat(d3.timeFormat("%d"))
         )
         .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")");
@@ -48,9 +49,19 @@ app.controller("main", function($scope, $http, $interval) {
 
     viewport = d3.brushX()
         .extent([[0,0], [width, height]])
-        .on("brush",
-            function() { console.log( viewport.extent()() ) }
-        );
+        .on("end",
+            function(){
+                if (!d3.event.sourceEvent || !d3.event.selection) return;
+                d = [d3.timeDay.round(
+                        x.invert(d3.event.selection[0])
+                )];
+                d[1] = d3.timeDay.offset(d[0], 1);
+                d3.select(this)
+                    .transition()
+                        .call(d3.event.target.move, d.map(x))
+            }
+        )
+
     chart.call(viewport)
 
     $http.get("iocp/types")
@@ -61,8 +72,8 @@ app.controller("main", function($scope, $http, $interval) {
             return $http.get(
                 "iocp/summary"
                 + "?node=" + node
-                + "&year=" + year
-                + "&month=" + month
+                + "&year=" + start.getFullYear()
+                + "&month=" + (start.getMonth()+1)
             );
 
         }).then(function(response){
