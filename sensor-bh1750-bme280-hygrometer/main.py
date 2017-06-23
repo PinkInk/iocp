@@ -7,10 +7,10 @@ try:
     START_MS = time.ticks_ms()
 
     import gc
-    import dht
     import machine
     import ujson
     from bh1750 import BH1750
+    from bme280 import BME280
     from umqtt.robust import MQTTClient
 
 
@@ -26,57 +26,71 @@ try:
 
     log('WLAN IP: {} mask {} g/w {}'.format(*do_connect()))
 
-
+    # General
     DEBUG = False # or filename as str
     SLEEP_SECS = 5*60
+
     # MQTT
     MQTT_SERVER = '192.168.0.80'
     MQTT_PORT = 1883
     MQTT_TOPIC = 'nodes'
-    MQTT_CLIENT = 'esp8266:18:fe:34:e1:1d:8b'
-    # DHT11
-    DHT11_PIN_PWR = 12
-    DHT11_PIN_DATA = 14
-    DHT11_INIT_SEC = 2
-    # BH1750
-    BH1750_PIN_SCL = 5
-    BH1750_PIN_SDA = 4
+    MQTT_CLIENT = 'NodeMCU:5c:cf:7f:ac:6e:6d'
+
+    # I2C
+    SCL = 5 # D1 on NodeMCU silkscreen
+    SDA = 4 # D2 on NodeMCU silkscreen
+
+    # ADC Soil humidity
+    ADC_CHANNEL = 0
+    # voltage divider as 1M:330k
+    # isolated probes read ~151
+    # wired together reads ~10
+    # in water reads ~60
+    SH_PWR_PIN = 14
+    SH_ZERO = 90
 
     def main(svr, port, topic, client):
         """
         main procedure
         """
-        log('Starting dht ... ', end='')
-        d_pwr = machine.Pin(DHT11_PIN_PWR, machine.Pin.OUT)
-        d_pwr.value(True)
-        dht11 = dht.DHT11(machine.Pin(DHT11_PIN_DATA))
-        time.sleep(DHT11_INIT_SEC)
-        log('sampling ... ', end='')
-        dht11.measure()
-        temperature = dht11.temperature()
-        humidity = dht11.humidity()
+
+        log('Init I2C bus ... ', end='')
+        scl = machine.Pin(SCL)
+        sda = machine.Pin(SDA)
+        i2c = machine.I2C(scl=scl, sda=sda)
         log('done.')
 
         log('Starting bh1750 ... ', end='')
-        scl = machine.Pin(BH1750_PIN_SCL)
-        sda = machine.Pin(BH1750_PIN_SDA)
-        i2c = machine.I2C(scl, sda)
         bh1750 = BH1750(i2c)
         log('sampling ... ', end='')
         luminance = bh1750.luminance(BH1750.ONCE_HIRES_1)
         bh1750.off() # shouldn't be necessary, one shot modes power down
         log('done.')
 
-        # log('Reading vbat ...', end='')
-        # vbat = machine.ADC(1).read() * 1.024
-        # log('done.')
+        log('Starting bme280 ... ', end='')
+        bme280 = BME280(i2c)
+        log('sampling ... ', end='')
+        temperature, pressure, humidity = bme280.sample()
+        log('done.')
+
+        log('Starting soil hygrometer & adc ... ', end='')
+        p14 = machine.Pin(SH_PWR_PIN, machine.Pin.OUT)
+        p14.on()
+        adc = machine.ADC(ADC_CHANNEL)
+        log('sampling ... ', end='')
+        s = adc.read()
+        soil_humidity = int(((SH_ZERO-s)/SH_ZERO)*100)
+        log('shutting down ...', end='')
+        p14.off()
+        log('done.')
 
         sample = {
             'node': client,
             'l': luminance,
             't': temperature,
             'h': humidity,
-            # 'vbat': vbat,
+            'p': pressure,
+            'sh': soil_humidity,
         }
         sample_json = ujson.dumps(sample)
         log('Sample: ' + sample_json)
