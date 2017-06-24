@@ -212,10 +212,17 @@ app.controller("main", function($scope, $http, $interval) {
                 })
             }
 
+            $scope.updateAll = function() {
+                $scope.updateLiveView();
+                $scope.updateTimeElapsed();
+                $scope.radialchartUpdate();
+            }
+
             // update
-            $scope.updateLiveView();
-            $scope.updateTimeElapsed();
-            $scope.radialchartUpdate();
+            // $scope.updateLiveView();
+            // $scope.updateTimeElapsed();
+            // $scope.radialchartUpdate();
+            $scope.updateAll();
             $interval($scope.updateLiveView, 60*1000);
             $interval($scope.updateTimeElapsed, 1000);
             $interval($scope.radialchartUpdate, 60*1000);
