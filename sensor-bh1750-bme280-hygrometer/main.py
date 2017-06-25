@@ -37,17 +37,19 @@ try:
     MQTT_CLIENT = 'NodeMCU:5c:cf:7f:ac:6e:6d'
 
     # I2C
-    SCL = 5 # D1 on NodeMCU silkscreen
-    SDA = 4 # D2 on NodeMCU silkscreen
+    SCL = 5 # d1 on NodeMCU silkscreen
+    SDA = 4 # d2 on NodeMCU silkscreen
 
     # ADC Soil humidity
     ADC_CHANNEL = 0
     # voltage divider as 1M:330k
-    # isolated probes read ~151
-    # wired together reads ~10
-    # in water reads ~60
-    SH_PWR_PIN = 14
-    SH_ZERO = 90
+    # calibration for particular physical config
+    #   isolated    ~150
+    #   wired       ~10
+    #   water       ~50
+    SH_PWR_PIN = 12 # d6 on NodeMCU Silkscreen
+    SH_ZERO = 160
+    SH_100 = 40
 
     def main(svr, port, topic, client):
         """
@@ -77,9 +79,11 @@ try:
         p14 = machine.Pin(SH_PWR_PIN, machine.Pin.OUT)
         p14.on()
         adc = machine.ADC(ADC_CHANNEL)
+        adc.read() # discard
+        time.sleep(1)
         log('sampling ... ', end='')
         s = adc.read()
-        soil_humidity = int(((SH_ZERO-s)/SH_ZERO)*100)
+        soil_humidity = int(((SH_ZERO-s)/(SH_ZERO-SH_100))*100)
         log('shutting down ...', end='')
         p14.off()
         log('done.')
