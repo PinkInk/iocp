@@ -71,26 +71,33 @@ app.controller("main", function($scope, $http, $interval) {
                 brush.move,
                 [x($scope.today), x(d3.timeDay.offset($scope.today, 1))]
             )
-    };
+    }
     updateViewport();
 
     $scope.daysadd = function(i) {
-        month = $scope.today.getMonth();
+        month_before = $scope.today.getMonth();
         $scope.today.setDate($scope.today.getDate()+i);
-        md = $scope.today.getMonth();
-        if (md != 0) {
-            $scope.monthsadd(md);
+        month_after = $scope.today.getMonth();
+        if (month_after != month_before) {
+            if (month_before == 12 && month_after == 0) {
+                i = 1;
+            } else if (month_before == 0 && month_after == 12) {
+                i = -1;
+            } else {
+                i = month_after-month_before;
+            }
+            $scope.monthsadd(i);
         } else {
             updateViewport();
         }
-    };
+    }
 
     $scope.monthsadd = function(i) {
         $scope.start = d3.timeMonth.offset($scope.start, i);
         $scope.end = d3.timeMonth.offset($scope.end, i);
         $scope.updateMonthChart();
         updateViewport();
-    };
+    }
 
     $http.get("iocp/types")
         .then (function(response) {
