@@ -25,7 +25,7 @@
         "type": "function",
         "z": "df0246a4.5a7b18",
         "name": "build_query",
-        "func": "// query string\n// msg.payload = {\"timestamp\": {\n//     \"$gte\": new Date(msg.payload.start),\n//     \"$lt\": new Date(msg.payload.end)\n// }};\nmsg.payload = {\n    \"$and\": [\n        {\"node\": msg.payload.node},\n        {\"timestamp\": {\n            \"$gte\": new Date(msg.payload.start),\n            \"$lt\": new Date(msg.payload.end)\n        }}\n    ]\n};\n\n// sort by timestamp\nmsg.sort = {\n    \"timestamp\": true, // ascending\n};\n\n// fields to return \nmsg.projection = {\n    \"timestamp\": 1,\n    \"t\": true, \n    \"h\": true, \n    \"l\": true, \n    \"_id\": false, // returned if not excluded\n};\n\nreturn msg;",
+        "func": "// query string\n// msg.payload = {\"timestamp\": {\n//     \"$gte\": new Date(msg.payload.start),\n//     \"$lt\": new Date(msg.payload.end)\n// }};\nmsg.payload = {\n    \"$and\": [\n        {\"node\": msg.payload.node},\n        {\"timestamp\": {\n            \"$gte\": new Date(msg.payload.start),\n            \"$lt\": new Date(msg.payload.end)\n        }}\n    ]\n};\n\n// sort by timestamp\nmsg.sort = {\n    \"timestamp\": true, // ascending\n};\n\n// fields to return \nmsg.projection = {\n    \"timestamp\": 1,\n    \"t\": true, \n    \"h\": true, \n    \"l\": true, \n    \"p\": true,\n    \"sh\": true,\n    \"_id\": false, // returned if not excluded\n};\n\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
         "x": 510,
